@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package org.serdaroquai.pml;
+option java_outer_classname = "NodeProto";
+
+message Node {
+  oneof node {
+    ExtensionNode e = 1;
+    ValueNode v = 2;
+  }
+}
+
+message ExtensionNode {
+  string key = 1;
+  bytes value = 2;
+}
+
+
+message ValueNode {
+  bytes value = 1;
+}
+
+/*
+message BranchNode {
+  optional string _0  = 1;
+  optional string _1 = 2;
+  optional string _2 = 3;
+  optional string _3 = 4;
+  optional string _4 = 5;
+  optional string _5 = 6;
+  optional string _6 = 7;
+  optional string _7 = 8;
+  optional string _8 = 9;
+  optional string _9 = 10;
+  optional string _A = 11;
+  optional string _B = 12;
+  optional string _C = 13;
+  optional string _D = 14;
+  optional string _E = 15;
+  optional string _F = 16;
+  optional string value = 17;
+}
+
+message Node {
+  optional ExtensionNode extension_node = 1;
+  optional ValueNode value_node = 2;
+  optional BranchNode branch_node = 3;
+}
+*/

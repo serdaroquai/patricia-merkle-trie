@@ -2,6 +2,6 @@ package org.serdaroquai.pml;
 
 public interface Store {
 
-	Node retrieve(byte[] hash);
+	Node get(byte[] hash);
 	void store(Node n);
 }

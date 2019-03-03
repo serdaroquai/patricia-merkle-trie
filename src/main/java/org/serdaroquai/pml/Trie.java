@@ -13,16 +13,16 @@ public interface Trie {
 	 * @param key
 	 * @return
 	 */
-	byte[] get(byte[] key);
+	String get(byte[] key);
 	
 	/**
 	 * Updates or inserts the value associated with given key
 	 * 
 	 * @param key
 	 * @param value
-	 * @return
+	 * @returns new root hash
 	 */
-	boolean put(byte[] key, byte[] value);
+	byte[] put(byte[] key, String value);
 	
 	/**
 	 * Removes the value associated with given key

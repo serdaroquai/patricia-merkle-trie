@@ -1,23 +1,40 @@
 package org.serdaroquai.pml;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
+import com.google.protobuf.ByteString;
+
 public class ByteUtilsTest {
 
+	
+	@Test
+	public void testIteratorWithString() {
+		ByteString b = ByteString.copyFrom("doge", StandardCharsets.UTF_8); // <64 6f 67 65>
+		Iterator<Character> it = ByteUtils.NibbleIterator.from(b);
+		assertTrue('6' == it.next());
+		assertTrue('4' == it.next());
+		assertTrue('6' == it.next());
+		assertTrue('f' == it.next());
+		assertTrue('6' == it.next());
+		assertTrue('7' == it.next());
+		assertTrue('6' == it.next());
+		assertTrue('5' == it.next());
+	}
+	
 	@Test
 	public void testIterator() {
 		byte[] bytes = new byte[] {(byte) 0x11, (byte) 0x23, (byte) 0x45, (byte) 0x67, 
 				(byte) 0x89, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF};
-		Iterator<Character> it = ByteUtils.NibbleIterator.from(bytes);
+		Iterator<Character> it = ByteUtils.NibbleIterator.from(ByteString.copyFrom(bytes));
 		assertNotNull(it);
 		
 		int i=0;
@@ -44,15 +61,14 @@ public class ByteUtilsTest {
 	
 	@Test
 	public void testEmptyIterator() {
-		byte[] bytes = new byte[0];
-		Iterator<Character> it = ByteUtils.NibbleIterator.from(bytes);
+		Iterator<Character> it = ByteUtils.NibbleIterator.from(ByteString.EMPTY);
 		assertFalse(it.hasNext());
 	}
 	
 	@Test(expected = NoSuchElementException.class)
 	public void testNoSuchElementIterator() {
 		byte[] bytes = new byte[] { (byte) 0x12 };
-		Iterator<Character> it = ByteUtils.NibbleIterator.from(bytes);
+		Iterator<Character> it = ByteUtils.NibbleIterator.from(ByteString.copyFrom(bytes));
 		it.next(); // 1
 		it.next(); // 2
 		it.next(); // Exception
@@ -61,48 +77,50 @@ public class ByteUtilsTest {
 	@Test
 	public void testEncodeOdd() {
 		String expected = "123456789abcdef";
-		byte[] bytes = new byte[] {(byte) 0x11, (byte) 0x23, (byte) 0x45, (byte) 0x67, 
-				(byte) 0x89, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF};
-		String actual = ByteUtils.encode(bytes);
+		ByteString bytes = ByteString.copyFrom(new byte[] {(byte) 0x11, (byte) 0x23, (byte) 0x45, (byte) 0x67, 
+				(byte) 0x89, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF});
+		String actual = ByteUtils.compactEncode(bytes);
 		assertEquals(expected, actual);
 	}
 	
 	@Test
 	public void testEncodeEven() {
 		String expected = "36";
-		byte[] bytes = new byte[] {(byte) 0x00, (byte) 0x36};
-		String actual = ByteUtils.encode(bytes);
+		ByteString bytes = ByteString.copyFrom(new byte[] {(byte) 0x00, (byte) 0x36});
+		String actual = ByteUtils.compactEncode(bytes);
 		assertEquals(expected, actual);
 	}
 	
 	@Test
 	public void testDecodeOdd() {
-		byte[] expectedOdd = new byte[] {(byte) 0x11, (byte) 0x23, (byte) 0x45, (byte) 0x67, 
-				(byte) 0x89, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF};
-		byte[] actualOdd = ByteUtils.decode("123456789abcdef");
-		assertArrayEquals(expectedOdd, actualOdd);
+		ByteString expectedOdd = ByteString.copyFrom(new byte[] {(byte) 0x11, (byte) 0x23, (byte) 0x45, (byte) 0x67, 
+				(byte) 0x89, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF});
+		ByteString actualOdd = ByteUtils.compactDecode("123456789abcdef");
+		assertEquals(expectedOdd, actualOdd);
 		
-		byte[] expectedEven = new byte[] {(byte) 0x00, (byte) 0x0F};
-		byte[] actualEven = ByteUtils.decode("0F");
- 		assertArrayEquals(expectedEven, actualEven);
+		ByteString expectedEven = ByteString.copyFrom(new byte[] {(byte) 0x00, (byte) 0x0F});
+		ByteString actualEven = ByteUtils.compactDecode("0F");
+ 		assertEquals(expectedEven, actualEven);
 	}
 	
 	@Test
 	public void testDecodeEven() {
-		byte[] expectedEven = new byte[] {(byte) 0x00, (byte) 0x0F};
-		byte[] actualEven = ByteUtils.decode("0F");
- 		assertArrayEquals(expectedEven, actualEven);
+		ByteString expectedEven = ByteString.copyFrom(new byte[] {(byte) 0x00, (byte) 0x0F});
+		ByteString actualEven = ByteUtils.compactDecode("0F");
+ 		assertEquals(expectedEven, actualEven);
 	}
 	
 	@Test
 	public void testUpperCaseLowerCase() {
-		byte[] expectedEven = new byte[] {(byte) 0x00, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF};
-		byte[] actualEven = ByteUtils.decode("abcdef");
- 		assertArrayEquals(expectedEven, actualEven);
+		ByteString expectedEven = ByteString.copyFrom(new byte[] {(byte) 0x00, (byte) 0xAB, 
+				(byte) 0xCD, (byte) 0xEF});
+		ByteString actualEven = ByteUtils.compactDecode("abcdef");
+ 		assertEquals(expectedEven, actualEven);
  		
- 		expectedEven = new byte[] {(byte) 0x00, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF};
-		actualEven = ByteUtils.decode("ABCDEF");
- 		assertArrayEquals(expectedEven, actualEven);
+ 		expectedEven = ByteString.copyFrom(new byte[] {(byte) 0x00, (byte) 0xAB,
+ 				(byte) 0xCD, (byte) 0xEF});
+		actualEven = ByteUtils.compactDecode("ABCDEF");
+ 		assertEquals(expectedEven, actualEven);
 	}
 	
 }

@@ -12,6 +12,17 @@ import com.google.protobuf.ByteString;
 
 public class TrieTest {
 
+	
+	@Test
+	public void testSomething() {
+//		"9abc".chars().forEach(System.out::println);
+//		byte[] bytes = "abcd".getBytes(StandardCharsets.UTF_8);
+//		System.out.println(BaseEncoding.base16().encode(bytes));
+//		Store store = new MemoryStore();
+//		TrieImpl t = new TrieImpl(store, Util.sha256(Node.EMPTY_NODE));
+//		t.get(Node.EMPTY_NODE, "abc");
+	}
+	
 	@Test
 	public void testPutToEmptyTrie() {
 		Store store = new MemoryStore();

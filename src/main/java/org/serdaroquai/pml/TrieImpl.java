@@ -23,14 +23,6 @@ public class TrieImpl implements Trie{
 		this.root = store.get(rootHash);
 	}
 
-	@Override
-	public String get(byte[] key) {
-		Result r = new Result();
-		internalGet(new Key(key), root, r);
-		r.trace();
-		return r.result;
-	}
-	
 	private static class Key {
 		private String hexKey;
 		private int pos;
@@ -57,6 +49,14 @@ public class TrieImpl implements Trie{
 			while (!route.isEmpty()) System.out.println(route.pollFirst());
 			System.out.println("Result: " + result);
 		}
+	}
+	
+	@Override
+	public String get(byte[] key) {
+		Result r = new Result();
+		internalGet(new Key(key), root, r);
+		r.trace();
+		return r.result;
 	}
 	
 	private void internalGet(Key k, Node n, Result r) {
@@ -161,6 +161,5 @@ public class TrieImpl implements Trie{
 	public byte[] getRootHash() {
 		return rootHash;
 	}
-	
 	
 }

@@ -3,6 +3,11 @@ syntax = "proto3";
 package org.serdaroquai.pml;
 option java_outer_classname = "NodeProto";
 
+message TreeNode {
+	repeated bytes array = 1;
+} 
+
+/*
 message Node {
   oneof node {
     ExtensionNode e = 1;
@@ -20,7 +25,7 @@ message ValueNode {
   bytes value = 1;
 }
 
-/*
+
 message BranchNode {
   optional string _0  = 1;
   optional string _1 = 2;

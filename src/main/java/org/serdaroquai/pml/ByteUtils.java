@@ -3,6 +3,8 @@ package org.serdaroquai.pml;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import com.google.protobuf.ByteString;
+
 public class ByteUtils {
 
 	/*
@@ -61,44 +63,44 @@ public class ByteUtils {
 	
 	public static class NibbleIterator implements Iterator<Character> {
 
-		private byte[] bytes;
+		private ByteString bytes;
 		private int i = -1;
 		
-		public static Iterator<Character> from(byte[] bytes) {
+		public static Iterator<Character> from(ByteString bytes) {
 			return new NibbleIterator(bytes);
 		}
 		
-		private NibbleIterator(byte[] bytes) { this.bytes = bytes;}
+		private NibbleIterator(ByteString bytes) { this.bytes = bytes;}
 		
 		@Override
-		public boolean hasNext() { return ((i + 1) >> 1) < bytes.length;}
+		public boolean hasNext() { return ((i + 1) >> 1) < bytes.size();}
 
 		@Override
 		public Character next() {
 			if (!hasNext()) throw new NoSuchElementException();
 			i++;
-			return nibbleToHex(bytes[i >> 1], (i & 0x01) == 0);
+			return nibbleToHex(bytes.byteAt(i >> 1), (i & 0x01) == 0);
 		}
 		
 	}
 	
 	
-	
-	public static String encode(byte[] bytes) {
-		if (bytes.length == 0) throw new IllegalStateException("Can not be empty");
+	public static String compactEncode(ByteString bytes) {
+		if (bytes.size() == 0) throw new IllegalStateException("Can not be empty");
 		
 		StringBuilder sb = new StringBuilder();
 		
-		if (nibbleToHex(bytes[0], true) == '1') sb.append(nibbleToHex(bytes[0], false));
+		if (nibbleToHex(bytes.byteAt(0), true) == '1') sb.append(nibbleToHex(bytes.byteAt(0), false));
 		
-		for (int i=1; i < bytes.length; i++) {
-			sb.append(nibbleToHex(bytes[i], true)).append(nibbleToHex(bytes[i], false));
+		for (int i=1; i < bytes.size(); i++) {
+			sb.append(nibbleToHex(bytes.byteAt(i), true)).append(nibbleToHex(bytes.byteAt(i), false));
 		}
 		
 		return sb.toString();
 	}
 	
-	public static byte[] decode(CharSequence cs) {
+	// TODO will possibly need the Node termination status later
+	public static ByteString compactDecode(CharSequence cs) {
 		int len = cs.length();
 		if (len == 0) throw new IllegalStateException("Can not be empty");
 		
@@ -113,14 +115,15 @@ public class ByteUtils {
 		while (read < len) {
 			result[write++] = (byte) (hexToNibble(cs.charAt(read++), true) | hexToNibble(cs.charAt(read++), false));
 		}
-		return result;
+		
+		return ByteString.copyFrom(result);
 	}
 	
 	/*
 	 * Converts a single hex char to a nibble representation. Since the result has to be a byte
 	 * alignment to left or right is optional
 	 * for example:  
-	 * 		left  aligned 'B' ==> 1011 000
+	 * 		left  aligned 'B' ==> 1011 0000
 	 * 		right aligned 'B' ==> 0000 1011
 	 */
 	protected static byte hexToNibble(char hex, boolean alignLeft) {

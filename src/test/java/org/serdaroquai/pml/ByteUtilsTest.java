@@ -1,15 +1,17 @@
 package org.serdaroquai.pml;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.google.protobuf.ByteString;
 
@@ -65,13 +67,13 @@ public class ByteUtilsTest {
 		assertFalse(it.hasNext());
 	}
 	
-	@Test(expected = NoSuchElementException.class)
+	@Test
 	public void testNoSuchElementIterator() {
 		byte[] bytes = new byte[] { (byte) 0x12 };
-		Iterator<Character> it = ByteUtils.NibbleIterator.from(ByteString.copyFrom(bytes));
+		final Iterator<Character> it = ByteUtils.NibbleIterator.from(ByteString.copyFrom(bytes));
 		it.next(); // 1
 		it.next(); // 2
-		it.next(); // Exception
+		assertThrows(NoSuchElementException.class, () -> it.next());
 	}
 	
 	@Test
@@ -79,7 +81,7 @@ public class ByteUtilsTest {
 		String expected = "123456789abcdef";
 		ByteString bytes = ByteString.copyFrom(new byte[] {(byte) 0x11, (byte) 0x23, (byte) 0x45, (byte) 0x67, 
 				(byte) 0x89, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF});
-		String actual = ByteUtils.compactEncode(bytes);
+		String actual = ByteUtils.compactDecode(bytes);
 		assertEquals(expected, actual);
 	}
 	
@@ -87,7 +89,7 @@ public class ByteUtilsTest {
 	public void testEncodeEven() {
 		String expected = "36";
 		ByteString bytes = ByteString.copyFrom(new byte[] {(byte) 0x00, (byte) 0x36});
-		String actual = ByteUtils.compactEncode(bytes);
+		String actual = ByteUtils.compactDecode(bytes);
 		assertEquals(expected, actual);
 	}
 	
@@ -95,18 +97,18 @@ public class ByteUtilsTest {
 	public void testDecodeOdd() {
 		ByteString expectedOdd = ByteString.copyFrom(new byte[] {(byte) 0x11, (byte) 0x23, (byte) 0x45, (byte) 0x67, 
 				(byte) 0x89, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF});
-		ByteString actualOdd = ByteUtils.compactDecode("123456789abcdef");
+		ByteString actualOdd = ByteUtils.compactEncode("123456789abcdef");
 		assertEquals(expectedOdd, actualOdd);
 		
 		ByteString expectedEven = ByteString.copyFrom(new byte[] {(byte) 0x00, (byte) 0x0F});
-		ByteString actualEven = ByteUtils.compactDecode("0F");
+		ByteString actualEven = ByteUtils.compactEncode("0F");
  		assertEquals(expectedEven, actualEven);
 	}
 	
 	@Test
 	public void testDecodeEven() {
 		ByteString expectedEven = ByteString.copyFrom(new byte[] {(byte) 0x00, (byte) 0x0F});
-		ByteString actualEven = ByteUtils.compactDecode("0F");
+		ByteString actualEven = ByteUtils.compactEncode("0F");
  		assertEquals(expectedEven, actualEven);
 	}
 	
@@ -114,12 +116,12 @@ public class ByteUtilsTest {
 	public void testUpperCaseLowerCase() {
 		ByteString expectedEven = ByteString.copyFrom(new byte[] {(byte) 0x00, (byte) 0xAB, 
 				(byte) 0xCD, (byte) 0xEF});
-		ByteString actualEven = ByteUtils.compactDecode("abcdef");
+		ByteString actualEven = ByteUtils.compactEncode("abcdef");
  		assertEquals(expectedEven, actualEven);
  		
  		expectedEven = ByteString.copyFrom(new byte[] {(byte) 0x00, (byte) 0xAB,
  				(byte) 0xCD, (byte) 0xEF});
-		actualEven = ByteUtils.compactDecode("ABCDEF");
+		actualEven = ByteUtils.compactEncode("ABCDEF");
  		assertEquals(expectedEven, actualEven);
 	}
 	

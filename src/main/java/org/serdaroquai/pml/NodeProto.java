@@ -19,17 +19,17 @@ public final class NodeProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated bytes array = 1;</code>
+     * <code>repeated bytes item = 1;</code>
      */
-    java.util.List<com.google.protobuf.ByteString> getArrayList();
+    java.util.List<com.google.protobuf.ByteString> getItemList();
     /**
-     * <code>repeated bytes array = 1;</code>
+     * <code>repeated bytes item = 1;</code>
      */
-    int getArrayCount();
+    int getItemCount();
     /**
-     * <code>repeated bytes array = 1;</code>
+     * <code>repeated bytes item = 1;</code>
      */
-    com.google.protobuf.ByteString getArray(int index);
+    com.google.protobuf.ByteString getItem(int index);
   }
   /**
    * Protobuf type {@code org.serdaroquai.pml.TreeNode}
@@ -44,7 +44,7 @@ public final class NodeProto {
       super(builder);
     }
     private TreeNode() {
-      array_ = java.util.Collections.emptyList();
+      item_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -73,10 +73,10 @@ public final class NodeProto {
               break;
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                array_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
+                item_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              array_.add(input.readBytes());
+              item_.add(input.readBytes());
               break;
             }
             default: {
@@ -95,7 +95,7 @@ public final class NodeProto {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          array_ = java.util.Collections.unmodifiableList(array_); // C
+          item_ = java.util.Collections.unmodifiableList(item_); // C
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -114,26 +114,26 @@ public final class NodeProto {
               org.serdaroquai.pml.NodeProto.TreeNode.class, org.serdaroquai.pml.NodeProto.TreeNode.Builder.class);
     }
 
-    public static final int ARRAY_FIELD_NUMBER = 1;
-    private java.util.List<com.google.protobuf.ByteString> array_;
+    public static final int ITEM_FIELD_NUMBER = 1;
+    private java.util.List<com.google.protobuf.ByteString> item_;
     /**
-     * <code>repeated bytes array = 1;</code>
+     * <code>repeated bytes item = 1;</code>
      */
     public java.util.List<com.google.protobuf.ByteString>
-        getArrayList() {
-      return array_;
+        getItemList() {
+      return item_;
     }
     /**
-     * <code>repeated bytes array = 1;</code>
+     * <code>repeated bytes item = 1;</code>
      */
-    public int getArrayCount() {
-      return array_.size();
+    public int getItemCount() {
+      return item_.size();
     }
     /**
-     * <code>repeated bytes array = 1;</code>
+     * <code>repeated bytes item = 1;</code>
      */
-    public com.google.protobuf.ByteString getArray(int index) {
-      return array_.get(index);
+    public com.google.protobuf.ByteString getItem(int index) {
+      return item_.get(index);
     }
 
     private byte memoizedIsInitialized = -1;
@@ -150,8 +150,8 @@ public final class NodeProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      for (int i = 0; i < array_.size(); i++) {
-        output.writeBytes(1, array_.get(i));
+      for (int i = 0; i < item_.size(); i++) {
+        output.writeBytes(1, item_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -164,12 +164,12 @@ public final class NodeProto {
       size = 0;
       {
         int dataSize = 0;
-        for (int i = 0; i < array_.size(); i++) {
+        for (int i = 0; i < item_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeBytesSizeNoTag(array_.get(i));
+            .computeBytesSizeNoTag(item_.get(i));
         }
         size += dataSize;
-        size += 1 * getArrayList().size();
+        size += 1 * getItemList().size();
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -186,8 +186,8 @@ public final class NodeProto {
       }
       org.serdaroquai.pml.NodeProto.TreeNode other = (org.serdaroquai.pml.NodeProto.TreeNode) obj;
 
-      if (!getArrayList()
-          .equals(other.getArrayList())) return false;
+      if (!getItemList()
+          .equals(other.getItemList())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -199,9 +199,9 @@ public final class NodeProto {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (getArrayCount() > 0) {
-        hash = (37 * hash) + ARRAY_FIELD_NUMBER;
-        hash = (53 * hash) + getArrayList().hashCode();
+      if (getItemCount() > 0) {
+        hash = (37 * hash) + ITEM_FIELD_NUMBER;
+        hash = (53 * hash) + getItemList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -336,7 +336,7 @@ public final class NodeProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        array_ = java.util.Collections.emptyList();
+        item_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
@@ -366,10 +366,10 @@ public final class NodeProto {
         org.serdaroquai.pml.NodeProto.TreeNode result = new org.serdaroquai.pml.NodeProto.TreeNode(this);
         int from_bitField0_ = bitField0_;
         if (((bitField0_ & 0x00000001) != 0)) {
-          array_ = java.util.Collections.unmodifiableList(array_);
+          item_ = java.util.Collections.unmodifiableList(item_);
           bitField0_ = (bitField0_ & ~0x00000001);
         }
-        result.array_ = array_;
+        result.item_ = item_;
         onBuilt();
         return result;
       }
@@ -418,13 +418,13 @@ public final class NodeProto {
 
       public Builder mergeFrom(org.serdaroquai.pml.NodeProto.TreeNode other) {
         if (other == org.serdaroquai.pml.NodeProto.TreeNode.getDefaultInstance()) return this;
-        if (!other.array_.isEmpty()) {
-          if (array_.isEmpty()) {
-            array_ = other.array_;
+        if (!other.item_.isEmpty()) {
+          if (item_.isEmpty()) {
+            item_ = other.item_;
             bitField0_ = (bitField0_ & ~0x00000001);
           } else {
-            ensureArrayIsMutable();
-            array_.addAll(other.array_);
+            ensureItemIsMutable();
+            item_.addAll(other.item_);
           }
           onChanged();
         }
@@ -458,74 +458,74 @@ public final class NodeProto {
       }
       private int bitField0_;
 
-      private java.util.List<com.google.protobuf.ByteString> array_ = java.util.Collections.emptyList();
-      private void ensureArrayIsMutable() {
+      private java.util.List<com.google.protobuf.ByteString> item_ = java.util.Collections.emptyList();
+      private void ensureItemIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
-          array_ = new java.util.ArrayList<com.google.protobuf.ByteString>(array_);
+          item_ = new java.util.ArrayList<com.google.protobuf.ByteString>(item_);
           bitField0_ |= 0x00000001;
          }
       }
       /**
-       * <code>repeated bytes array = 1;</code>
+       * <code>repeated bytes item = 1;</code>
        */
       public java.util.List<com.google.protobuf.ByteString>
-          getArrayList() {
+          getItemList() {
         return ((bitField0_ & 0x00000001) != 0) ?
-                 java.util.Collections.unmodifiableList(array_) : array_;
+                 java.util.Collections.unmodifiableList(item_) : item_;
       }
       /**
-       * <code>repeated bytes array = 1;</code>
+       * <code>repeated bytes item = 1;</code>
        */
-      public int getArrayCount() {
-        return array_.size();
+      public int getItemCount() {
+        return item_.size();
       }
       /**
-       * <code>repeated bytes array = 1;</code>
+       * <code>repeated bytes item = 1;</code>
        */
-      public com.google.protobuf.ByteString getArray(int index) {
-        return array_.get(index);
+      public com.google.protobuf.ByteString getItem(int index) {
+        return item_.get(index);
       }
       /**
-       * <code>repeated bytes array = 1;</code>
+       * <code>repeated bytes item = 1;</code>
        */
-      public Builder setArray(
+      public Builder setItem(
           int index, com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  ensureArrayIsMutable();
-        array_.set(index, value);
+  ensureItemIsMutable();
+        item_.set(index, value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated bytes array = 1;</code>
+       * <code>repeated bytes item = 1;</code>
        */
-      public Builder addArray(com.google.protobuf.ByteString value) {
+      public Builder addItem(com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  ensureArrayIsMutable();
-        array_.add(value);
+  ensureItemIsMutable();
+        item_.add(value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated bytes array = 1;</code>
+       * <code>repeated bytes item = 1;</code>
        */
-      public Builder addAllArray(
+      public Builder addAllItem(
           java.lang.Iterable<? extends com.google.protobuf.ByteString> values) {
-        ensureArrayIsMutable();
+        ensureItemIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, array_);
+            values, item_);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated bytes array = 1;</code>
+       * <code>repeated bytes item = 1;</code>
        */
-      public Builder clearArray() {
-        array_ = java.util.Collections.emptyList();
+      public Builder clearItem() {
+        item_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
@@ -597,9 +597,8 @@ public final class NodeProto {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\nnode.proto\022\023org.serdaroquai.pml\"\031\n\010Tre" +
-      "eNode\022\r\n\005array\030\001 \003(\014B\013B\tNodeProtob\006proto" +
-      "3"
+      "\n\nnode.proto\022\023org.serdaroquai.pml\"\030\n\010Tre" +
+      "eNode\022\014\n\004item\030\001 \003(\014B\013B\tNodeProtob\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -618,7 +617,7 @@ public final class NodeProto {
     internal_static_org_serdaroquai_pml_TreeNode_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_org_serdaroquai_pml_TreeNode_descriptor,
-        new java.lang.String[] { "Array", });
+        new java.lang.String[] { "Item", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

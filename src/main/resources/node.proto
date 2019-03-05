@@ -4,7 +4,7 @@ package org.serdaroquai.pml;
 option java_outer_classname = "NodeProto";
 
 message TreeNode {
-	repeated bytes array = 1;
+	repeated bytes item = 1;
 } 
 
 /*

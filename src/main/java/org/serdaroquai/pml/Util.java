@@ -4,6 +4,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import org.serdaroquai.pml.NodeProto.TreeNode;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -27,6 +29,14 @@ public class Util {
 	
 	public static byte[] sha256(Node n) {
 		return sha256digest.digest(n.getHashableString().getBytes(StandardCharsets.UTF_8));
+	}
+	
+	public static byte[] sha256(TreeNode n) {
+		return sha256digest.digest(n.toByteArray());
+	}
+	
+	public static byte[] sha256(byte[] bytes) {
+		return sha256digest.digest(bytes);
 	}
 	
 	public static String serialize(Object o){

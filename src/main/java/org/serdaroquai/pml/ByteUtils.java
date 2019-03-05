@@ -85,7 +85,7 @@ public class ByteUtils {
 	}
 	
 	
-	public static String compactEncode(ByteString bytes) {
+	public static String compactDecode(ByteString bytes) {
 		if (bytes.size() == 0) throw new IllegalStateException("Can not be empty");
 		
 		StringBuilder sb = new StringBuilder();
@@ -100,7 +100,7 @@ public class ByteUtils {
 	}
 	
 	// TODO will possibly need the Node termination status later
-	public static ByteString compactDecode(CharSequence cs) {
+	public static ByteString compactEncode(CharSequence cs) {
 		int len = cs.length();
 		if (len == 0) throw new IllegalStateException("Can not be empty");
 		
@@ -134,6 +134,10 @@ public class ByteUtils {
 	
 	protected static char nibbleToHex(byte b, boolean leftNibble) {
 		return leftNibble ? nibblesToHex[((b & 0xF0) >> 4)] : nibblesToHex[(b & 0x0F)];
+	}
+	
+	public static int nibbleToIndex(char hexNibble) {
+		return hexToNibbles[hexNibble];
 	}
 	
 }

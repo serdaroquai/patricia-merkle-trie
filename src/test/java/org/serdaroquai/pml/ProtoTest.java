@@ -1,8 +1,9 @@
 package org.serdaroquai.pml;
 
-import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 import org.serdaroquai.pml.NodeProto.TreeNode;
 
 import com.google.protobuf.ByteString;
@@ -17,12 +18,12 @@ public class ProtoTest {
 		
 		TreeNode.Builder b = NodeProto.TreeNode.newBuilder();
 		
-		for (int i=0; i<17; i++) b.addArray(ByteString.EMPTY);
+		for (int i=0; i<17; i++) b.addItem(ByteString.EMPTY);
 		TreeNode n = b.build();
 		ByteString bytes = n.toByteString();
 		n = TreeNode.parseFrom(bytes);
 
-		assertEquals(17, n.getArrayCount());
-		assertEquals(ByteString.EMPTY, n.getArray(16));
+		assertEquals(17, n.getItemCount());
+		assertEquals(ByteString.EMPTY, n.getItem(16));
 	}
 }

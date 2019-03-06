@@ -15,7 +15,6 @@ import com.google.protobuf.ByteString.ByteIterator;
  */
 public class NibbleString {
 
-	private static final char ODD_LENGTH = '1';
 	private static final byte ODD_START = 0x10;
 	private static final byte EVEN_START = 0x00;
 	

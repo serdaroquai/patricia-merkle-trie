@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.google.protobuf.ByteString;
@@ -17,6 +18,13 @@ public class NibbleStringTest {
 	private static final byte[] LONG_BYTES = new byte[]{(byte) 0x10, (byte) 0x12, (byte) 0x34,
 			(byte) 0x56, (byte) 0x78, (byte) 0x9a, (byte) 0xbc, (byte) 0xde};
 
+	@Test
+	@Disabled
+	public void testOddFlag() {
+		byte b = 0b10;
+		System.out.println(b);
+//		a useless test I keep here to remind myself the pretty byte representation
+	}
 	@Test
 	public void testSubstring() {
 		NibbleString n = NibbleString.compactDecode(ByteString.copyFrom(ODD_LENGTH_BYTES));

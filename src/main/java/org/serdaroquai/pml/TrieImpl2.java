@@ -71,8 +71,8 @@ public class TrieImpl2 {
 //	public ByteString get(ByteString node, ByteString bytes) {
 //		return getHelper(node, NibbleString.from(bytes));
 //	}
-	public ByteString get(TreeNode node, ByteString bytes) {
-		return getHelper2(node, NibbleString.from(bytes));
+	public ByteString get(ByteString nodeBytes, ByteString bytes) {
+		return getHelper2(decodeToNode(nodeBytes), NibbleString.from(bytes));
 	}
 	
 	private boolean isTerminal(ByteString bs) {

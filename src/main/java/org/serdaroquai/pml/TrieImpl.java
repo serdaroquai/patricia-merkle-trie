@@ -1,8 +1,7 @@
 package org.serdaroquai.pml;
 
-import org.serdaroquai.pml.NodeProto.TreeNode;
+import org.serdaroquai.pml.NodeProto.TrieNode;
 
-import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -49,14 +48,14 @@ import com.google.protobuf.InvalidProtocolBufferException;
  * @author tr1b6162
  *
  */
-public class TrieImpl2 {
+public class TrieImpl {
 	
-	public static final TreeNode EMPTY_NODE = TreeNode.newBuilder().build();
+	public static final TrieNode EMPTY_NODE = TrieNode.newBuilder().build();
 	public static final ByteString EMPTY_NODE_BYTES = EMPTY_NODE.toByteString();
 	
-	Store2 store;
+	Store store;
 	
-	public TrieImpl2(Store2 store) {
+	public TrieImpl(Store store) {
 		this.store = store;
 	}
 	
@@ -68,9 +67,6 @@ public class TrieImpl2 {
 	 * @param path bytes of key (Not compact)
 	 * @return
 	 */
-//	public ByteString get(ByteString node, ByteString bytes) {
-//		return getHelper(node, NibbleString.from(bytes));
-//	}
 	public ByteString get(ByteString nodeBytes, ByteString bytes) {
 		return getHelper2(decodeToNode(nodeBytes), NibbleString.from(bytes));
 	}
@@ -83,7 +79,7 @@ public class TrieImpl2 {
 	 * returns the ByteString of node OR stores the node and returns the hash
 	 * returned ByteString is always <= 32 so you can store it in parent node 
 	 */
-	private ByteString encodeNode(TreeNode node) {
+	private ByteString encodeNode(TrieNode node) {
 		if (EMPTY_NODE.equals(node)) return EMPTY_NODE_BYTES;
 		ByteString encoded = node.toByteString();
 		if (encoded.size() < 32) return encoded;
@@ -94,30 +90,33 @@ public class TrieImpl2 {
 		}
 	}
 	
+
 	/*
-	 *  TODO: this is probably too much of a performance overhead because of try catch
-	 *  we can always introduce a hash type, so that Any parses regardless;
+	 * Avoiding exceptions here to increase performance, hence introduced a single 
+	 * element TrieNode that only holds a hash value.
+	 * 
+	 * byte length becomes 34 per hash instead of 32.
+	 * 
+	 * TODO take a look at https://developers.google.com/protocol-buffers/docs/encoding
+	 * 
 	 */
-	private TreeNode decodeToNode(ByteString bytes) {
+	private TrieNode decodeToNode(ByteString bytes) {
 		
 		if (EMPTY_NODE_BYTES.equals(bytes)) return EMPTY_NODE;
 		
 		try {
-			Any any = Any.parseFrom(bytes);
+			TrieNode node = TrieNode.parseFrom(bytes);
+			if (node.getItemCount() == 1) // This is a hash node
+				return TrieNode.parseFrom(store.get(bytes));
+			else
+				return node; 
 			
-			if (any.is(TreeNode.class)) 
-				return any.unpack(TreeNode.class);
-			
-		} catch (InvalidProtocolBufferException e) {}
-		
-		try {
-			return TreeNode.parseFrom(store.get(bytes));			
 		} catch (InvalidProtocolBufferException e) {}
 		
 		throw new AssertionError("Never happen");
 	}
 	
-	public ByteString getHelper2(TreeNode node, NibbleString path) {
+	public ByteString getHelper2(TrieNode node, NibbleString path) {
 		NodeType type = getNodeType(node);
 		
 		if (type == NodeType.BLANK)
@@ -146,7 +145,7 @@ public class TrieImpl2 {
 		throw new AssertionError("Not possible");
 	}
 	
-	private NodeType getNodeType(TreeNode node) {
+	private NodeType getNodeType(TrieNode node) {
 		if (EMPTY_NODE.equals(node)) 
 			return NodeType.BLANK;
 		
@@ -165,26 +164,5 @@ public class TrieImpl2 {
 		
 		throw new AssertionError("Impossible");
 	}
-
-//	public ByteString getHelper(ByteString nodeBytes, NibbleString path) {
-//		if (path.size() == 0 || nodeBytes == EMPTY_NODE_BYTES) return nodeBytes;
-//		
-//		TreeNode node = decodeToNode(nodeBytes);
-//				
-//		if (node.getItemCount() == 2) {
-//			NibbleString key = NibbleString.compactDecode(node.getItem(0));
-//			if (key.equals(path.substring(0, key.size()))) {
-//				return getHelper(node.getItem(1), path.substring(key.size()));
-//			} else {
-//				return EMPTY_NODE_BYTES;
-//			}
-//		
-//		} else if (node.getItemCount() == 17) {
-//			char key = path.nibbleAt(0);
-//			return getHelper(node.getItem(ByteUtils.nibbleToIndex(key)), path.substring(1));
-//		}
-//		
-//		throw new AssertionError("Should never happen");
-//	}
 
 }

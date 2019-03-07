@@ -4,8 +4,7 @@ package org.serdaroquai.pml;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import org.serdaroquai.pml.NodeProto.TreeNode;
-import org.serdaroquai.pml.NodeProto.TreeNode.Builder;
+import org.serdaroquai.pml.NodeProto.TrieNode;
 
 import com.google.protobuf.ByteString;
 
@@ -32,61 +31,61 @@ public class TrieTest {
 		hashG:    [ <35>, 'coin' ]
 		*/
 		
-		Builder builder = TreeNode.newBuilder();
+		TrieNode.Builder builder = TrieNode.newBuilder();
 		for (int i=0; i<17; i++) builder.addItem(ByteString.EMPTY);
-		final TreeNode branchPrototype = builder.build();
+		final TrieNode branchPrototype = builder.build();
 		
-		Store2 store = new MemoryStore2();
-		TreeNode g = TreeNode.newBuilder()
+		Store store = new MemoryStore();
+		TrieNode g = TrieNode.newBuilder()
 				.addItem(ByteString.copyFrom(new byte[] {(byte) 0x35}))
 				.addItem(ByteString.copyFrom("coin".getBytes()))
 				.build();
 		ByteString hashG = store.put(g);
 		
-		TreeNode f = TreeNode.newBuilder(branchPrototype)
+		TrieNode f = TrieNode.newBuilder(branchPrototype)
 				.setItem(6, hashG)
 				.setItem(16, ByteString.copyFrom("puppy".getBytes()))
 				.build();
 		ByteString hashF = store.put(f);
 		
-		TreeNode e = TreeNode.newBuilder()
+		TrieNode e = TrieNode.newBuilder()
 				.addItem(ByteString.copyFrom(new byte[] {(byte) 0x17}))
 				.addItem(hashF)
 				.build();
 		ByteString hashE = store.put(e);
 		
-		TreeNode d = TreeNode.newBuilder(branchPrototype)
+		TrieNode d = TrieNode.newBuilder(branchPrototype)
 				.setItem(6, hashE)
 				.setItem(16, ByteString.copyFrom("verb".getBytes()))
 				.build();
 		ByteString hashD = store.put(d);
 		
-		TreeNode b = TreeNode.newBuilder()
+		TrieNode b = TrieNode.newBuilder()
 				.addItem(ByteString.copyFrom(new byte[] {(byte) 0x00, (byte) 0x6f}))
 				.addItem(hashD)
 				.build();
 		ByteString hashB = store.put(b);
 		
-		TreeNode c = TreeNode.newBuilder()
+		TrieNode c = TrieNode.newBuilder()
 				.addItem(ByteString.copyFrom(new byte[] {
 						(byte) 0x20, (byte) 0x6f, (byte) 0x72, (byte) 0x73, (byte) 0x65}))
 				.addItem(ByteString.copyFrom("stallion".getBytes()))
 				.build();
 		ByteString hashC = store.put(c);
 		
-		TreeNode a = TreeNode.newBuilder(branchPrototype)
+		TrieNode a = TrieNode.newBuilder(branchPrototype)
 				.setItem(4, hashB)
 				.setItem(8, hashC)
 				.build();
 		ByteString hashA = store.put(a);
 		
-		TreeNode root = TreeNode.newBuilder()
+		TrieNode root = TrieNode.newBuilder()
 				.addItem(ByteString.copyFrom(new byte[] {(byte) 0x16}))
 				.addItem(hashA)
 				.build();
 		ByteString rootHash = store.put(root);
 		
-		TrieImpl2 trie = new TrieImpl2(store);
+		TrieImpl trie = new TrieImpl(store);
 		
 		assertEquals("verb", trie.get(rootHash, ByteString.copyFromUtf8("do")).toStringUtf8());
 		assertEquals("puppy", trie.get(rootHash, ByteString.copyFromUtf8("dog")).toStringUtf8());

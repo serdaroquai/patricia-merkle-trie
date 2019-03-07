@@ -4,7 +4,7 @@ package org.serdaroquai.pml;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import org.serdaroquai.pml.NodeProto.TreeNode;
+import org.serdaroquai.pml.NodeProto.TrieNode;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -16,12 +16,12 @@ public class ProtoTest {
 		// TODO mb a good idea to make a prototype empty branch node so that 
 		// we can utilize TreeNode.newBuilder(prototype)?
 		
-		TreeNode.Builder b = NodeProto.TreeNode.newBuilder();
+		TrieNode.Builder b = NodeProto.TrieNode.newBuilder();
 		
 		for (int i=0; i<17; i++) b.addItem(ByteString.EMPTY);
-		TreeNode n = b.build();
+		TrieNode n = b.build();
 		ByteString bytes = n.toByteString();
-		n = TreeNode.parseFrom(bytes);
+		n = TrieNode.parseFrom(bytes);
 
 		assertEquals(17, n.getItemCount());
 		assertEquals(ByteString.EMPTY, n.getItem(16));

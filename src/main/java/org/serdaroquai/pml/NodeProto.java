@@ -14,8 +14,8 @@ public final class NodeProto {
     registerAllExtensions(
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
-  public interface TreeNodeOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:org.serdaroquai.pml.TreeNode)
+  public interface TrieNodeOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:org.serdaroquai.pml.TrieNode)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -32,18 +32,18 @@ public final class NodeProto {
     com.google.protobuf.ByteString getItem(int index);
   }
   /**
-   * Protobuf type {@code org.serdaroquai.pml.TreeNode}
+   * Protobuf type {@code org.serdaroquai.pml.TrieNode}
    */
-  public  static final class TreeNode extends
+  public  static final class TrieNode extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:org.serdaroquai.pml.TreeNode)
-      TreeNodeOrBuilder {
+      // @@protoc_insertion_point(message_implements:org.serdaroquai.pml.TrieNode)
+      TrieNodeOrBuilder {
   private static final long serialVersionUID = 0L;
-    // Use TreeNode.newBuilder() to construct.
-    private TreeNode(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+    // Use TrieNode.newBuilder() to construct.
+    private TrieNode(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private TreeNode() {
+    private TrieNode() {
       item_ = java.util.Collections.emptyList();
     }
 
@@ -52,7 +52,7 @@ public final class NodeProto {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private TreeNode(
+    private TrieNode(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -103,15 +103,15 @@ public final class NodeProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.serdaroquai.pml.NodeProto.internal_static_org_serdaroquai_pml_TreeNode_descriptor;
+      return org.serdaroquai.pml.NodeProto.internal_static_org_serdaroquai_pml_TrieNode_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.serdaroquai.pml.NodeProto.internal_static_org_serdaroquai_pml_TreeNode_fieldAccessorTable
+      return org.serdaroquai.pml.NodeProto.internal_static_org_serdaroquai_pml_TrieNode_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.serdaroquai.pml.NodeProto.TreeNode.class, org.serdaroquai.pml.NodeProto.TreeNode.Builder.class);
+              org.serdaroquai.pml.NodeProto.TrieNode.class, org.serdaroquai.pml.NodeProto.TrieNode.Builder.class);
     }
 
     public static final int ITEM_FIELD_NUMBER = 1;
@@ -181,10 +181,10 @@ public final class NodeProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.serdaroquai.pml.NodeProto.TreeNode)) {
+      if (!(obj instanceof org.serdaroquai.pml.NodeProto.TrieNode)) {
         return super.equals(obj);
       }
-      org.serdaroquai.pml.NodeProto.TreeNode other = (org.serdaroquai.pml.NodeProto.TreeNode) obj;
+      org.serdaroquai.pml.NodeProto.TrieNode other = (org.serdaroquai.pml.NodeProto.TrieNode) obj;
 
       if (!getItemList()
           .equals(other.getItemList())) return false;
@@ -208,69 +208,69 @@ public final class NodeProto {
       return hash;
     }
 
-    public static org.serdaroquai.pml.NodeProto.TreeNode parseFrom(
+    public static org.serdaroquai.pml.NodeProto.TrieNode parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.serdaroquai.pml.NodeProto.TreeNode parseFrom(
+    public static org.serdaroquai.pml.NodeProto.TrieNode parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.serdaroquai.pml.NodeProto.TreeNode parseFrom(
+    public static org.serdaroquai.pml.NodeProto.TrieNode parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.serdaroquai.pml.NodeProto.TreeNode parseFrom(
+    public static org.serdaroquai.pml.NodeProto.TrieNode parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.serdaroquai.pml.NodeProto.TreeNode parseFrom(byte[] data)
+    public static org.serdaroquai.pml.NodeProto.TrieNode parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.serdaroquai.pml.NodeProto.TreeNode parseFrom(
+    public static org.serdaroquai.pml.NodeProto.TrieNode parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.serdaroquai.pml.NodeProto.TreeNode parseFrom(java.io.InputStream input)
+    public static org.serdaroquai.pml.NodeProto.TrieNode parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static org.serdaroquai.pml.NodeProto.TreeNode parseFrom(
+    public static org.serdaroquai.pml.NodeProto.TrieNode parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.serdaroquai.pml.NodeProto.TreeNode parseDelimitedFrom(java.io.InputStream input)
+    public static org.serdaroquai.pml.NodeProto.TrieNode parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static org.serdaroquai.pml.NodeProto.TreeNode parseDelimitedFrom(
+    public static org.serdaroquai.pml.NodeProto.TrieNode parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.serdaroquai.pml.NodeProto.TreeNode parseFrom(
+    public static org.serdaroquai.pml.NodeProto.TrieNode parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static org.serdaroquai.pml.NodeProto.TreeNode parseFrom(
+    public static org.serdaroquai.pml.NodeProto.TrieNode parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -283,7 +283,7 @@ public final class NodeProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.serdaroquai.pml.NodeProto.TreeNode prototype) {
+    public static Builder newBuilder(org.serdaroquai.pml.NodeProto.TrieNode prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -299,26 +299,26 @@ public final class NodeProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.serdaroquai.pml.TreeNode}
+     * Protobuf type {@code org.serdaroquai.pml.TrieNode}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:org.serdaroquai.pml.TreeNode)
-        org.serdaroquai.pml.NodeProto.TreeNodeOrBuilder {
+        // @@protoc_insertion_point(builder_implements:org.serdaroquai.pml.TrieNode)
+        org.serdaroquai.pml.NodeProto.TrieNodeOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.serdaroquai.pml.NodeProto.internal_static_org_serdaroquai_pml_TreeNode_descriptor;
+        return org.serdaroquai.pml.NodeProto.internal_static_org_serdaroquai_pml_TrieNode_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.serdaroquai.pml.NodeProto.internal_static_org_serdaroquai_pml_TreeNode_fieldAccessorTable
+        return org.serdaroquai.pml.NodeProto.internal_static_org_serdaroquai_pml_TrieNode_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.serdaroquai.pml.NodeProto.TreeNode.class, org.serdaroquai.pml.NodeProto.TreeNode.Builder.class);
+                org.serdaroquai.pml.NodeProto.TrieNode.class, org.serdaroquai.pml.NodeProto.TrieNode.Builder.class);
       }
 
-      // Construct using org.serdaroquai.pml.NodeProto.TreeNode.newBuilder()
+      // Construct using org.serdaroquai.pml.NodeProto.TrieNode.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -344,17 +344,17 @@ public final class NodeProto {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.serdaroquai.pml.NodeProto.internal_static_org_serdaroquai_pml_TreeNode_descriptor;
+        return org.serdaroquai.pml.NodeProto.internal_static_org_serdaroquai_pml_TrieNode_descriptor;
       }
 
       @java.lang.Override
-      public org.serdaroquai.pml.NodeProto.TreeNode getDefaultInstanceForType() {
-        return org.serdaroquai.pml.NodeProto.TreeNode.getDefaultInstance();
+      public org.serdaroquai.pml.NodeProto.TrieNode getDefaultInstanceForType() {
+        return org.serdaroquai.pml.NodeProto.TrieNode.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.serdaroquai.pml.NodeProto.TreeNode build() {
-        org.serdaroquai.pml.NodeProto.TreeNode result = buildPartial();
+      public org.serdaroquai.pml.NodeProto.TrieNode build() {
+        org.serdaroquai.pml.NodeProto.TrieNode result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -362,8 +362,8 @@ public final class NodeProto {
       }
 
       @java.lang.Override
-      public org.serdaroquai.pml.NodeProto.TreeNode buildPartial() {
-        org.serdaroquai.pml.NodeProto.TreeNode result = new org.serdaroquai.pml.NodeProto.TreeNode(this);
+      public org.serdaroquai.pml.NodeProto.TrieNode buildPartial() {
+        org.serdaroquai.pml.NodeProto.TrieNode result = new org.serdaroquai.pml.NodeProto.TrieNode(this);
         int from_bitField0_ = bitField0_;
         if (((bitField0_ & 0x00000001) != 0)) {
           item_ = java.util.Collections.unmodifiableList(item_);
@@ -408,16 +408,16 @@ public final class NodeProto {
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.serdaroquai.pml.NodeProto.TreeNode) {
-          return mergeFrom((org.serdaroquai.pml.NodeProto.TreeNode)other);
+        if (other instanceof org.serdaroquai.pml.NodeProto.TrieNode) {
+          return mergeFrom((org.serdaroquai.pml.NodeProto.TrieNode)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.serdaroquai.pml.NodeProto.TreeNode other) {
-        if (other == org.serdaroquai.pml.NodeProto.TreeNode.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.serdaroquai.pml.NodeProto.TrieNode other) {
+        if (other == org.serdaroquai.pml.NodeProto.TrieNode.getDefaultInstance()) return this;
         if (!other.item_.isEmpty()) {
           if (item_.isEmpty()) {
             item_ = other.item_;
@@ -443,11 +443,11 @@ public final class NodeProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.serdaroquai.pml.NodeProto.TreeNode parsedMessage = null;
+        org.serdaroquai.pml.NodeProto.TrieNode parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.serdaroquai.pml.NodeProto.TreeNode) e.getUnfinishedMessage();
+          parsedMessage = (org.serdaroquai.pml.NodeProto.TrieNode) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -543,51 +543,51 @@ public final class NodeProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:org.serdaroquai.pml.TreeNode)
+      // @@protoc_insertion_point(builder_scope:org.serdaroquai.pml.TrieNode)
     }
 
-    // @@protoc_insertion_point(class_scope:org.serdaroquai.pml.TreeNode)
-    private static final org.serdaroquai.pml.NodeProto.TreeNode DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:org.serdaroquai.pml.TrieNode)
+    private static final org.serdaroquai.pml.NodeProto.TrieNode DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.serdaroquai.pml.NodeProto.TreeNode();
+      DEFAULT_INSTANCE = new org.serdaroquai.pml.NodeProto.TrieNode();
     }
 
-    public static org.serdaroquai.pml.NodeProto.TreeNode getDefaultInstance() {
+    public static org.serdaroquai.pml.NodeProto.TrieNode getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<TreeNode>
-        PARSER = new com.google.protobuf.AbstractParser<TreeNode>() {
+    private static final com.google.protobuf.Parser<TrieNode>
+        PARSER = new com.google.protobuf.AbstractParser<TrieNode>() {
       @java.lang.Override
-      public TreeNode parsePartialFrom(
+      public TrieNode parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new TreeNode(input, extensionRegistry);
+        return new TrieNode(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<TreeNode> parser() {
+    public static com.google.protobuf.Parser<TrieNode> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<TreeNode> getParserForType() {
+    public com.google.protobuf.Parser<TrieNode> getParserForType() {
       return PARSER;
     }
 
     @java.lang.Override
-    public org.serdaroquai.pml.NodeProto.TreeNode getDefaultInstanceForType() {
+    public org.serdaroquai.pml.NodeProto.TrieNode getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_serdaroquai_pml_TreeNode_descriptor;
+    internal_static_org_serdaroquai_pml_TrieNode_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_org_serdaroquai_pml_TreeNode_fieldAccessorTable;
+      internal_static_org_serdaroquai_pml_TrieNode_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -597,7 +597,7 @@ public final class NodeProto {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\nnode.proto\022\023org.serdaroquai.pml\"\030\n\010Tre" +
+      "\n\nnode.proto\022\023org.serdaroquai.pml\"\030\n\010Tri" +
       "eNode\022\014\n\004item\030\001 \003(\014B\013B\tNodeProtob\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
@@ -612,11 +612,11 @@ public final class NodeProto {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         }, assigner);
-    internal_static_org_serdaroquai_pml_TreeNode_descriptor =
+    internal_static_org_serdaroquai_pml_TrieNode_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_org_serdaroquai_pml_TreeNode_fieldAccessorTable = new
+    internal_static_org_serdaroquai_pml_TrieNode_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_org_serdaroquai_pml_TreeNode_descriptor,
+        internal_static_org_serdaroquai_pml_TrieNode_descriptor,
         new java.lang.String[] { "Item", });
   }
 

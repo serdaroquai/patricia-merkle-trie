@@ -3,11 +3,11 @@ package org.serdaroquai.pml;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.serdaroquai.pml.NodeProto.TreeNode;
+import org.serdaroquai.pml.NodeProto.TrieNode;
 
 import com.google.protobuf.ByteString;
 
-public class MemoryStore2 implements Store2{
+public class MemoryStore implements Store{
 
 	Map<ByteString, ByteString> map = new HashMap<>();
 	
@@ -17,12 +17,14 @@ public class MemoryStore2 implements Store2{
 	}
 	
 	@Override
-	public ByteString put(TreeNode n) {
+	public ByteString put(TrieNode n) {
 		byte[] bytes = n.toByteArray();
 		byte[] hashBytes = Util.sha256(bytes); 
 		ByteString hash = ByteString.copyFrom(hashBytes);
-		map.put(hash, ByteString.copyFrom(bytes));
-		return hash;
+		TrieNode hashNode = TrieNode.newBuilder().addItem(hash).build();
+		ByteString hashNodeBytes = hashNode.toByteString();
+		map.put(hashNodeBytes, n.toByteString());
+		return hashNodeBytes;
 	}
 
 	@Override

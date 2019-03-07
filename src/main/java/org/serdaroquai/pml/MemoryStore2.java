@@ -9,10 +9,10 @@ import com.google.protobuf.ByteString;
 
 public class MemoryStore2 implements Store2{
 
-	Map<ByteString, TreeNode> map = new HashMap<>();
+	Map<ByteString, ByteString> map = new HashMap<>();
 	
 	@Override
-	public TreeNode get(ByteString hash) {
+	public ByteString get(ByteString hash) {
 		return map.get(hash);
 	}
 	
@@ -21,8 +21,13 @@ public class MemoryStore2 implements Store2{
 		byte[] bytes = n.toByteArray();
 		byte[] hashBytes = Util.sha256(bytes); 
 		ByteString hash = ByteString.copyFrom(hashBytes);
-		map.put(hash, n);
+		map.put(hash, ByteString.copyFrom(bytes));
 		return hash;
+	}
+
+	@Override
+	public void put(ByteString hash, ByteString encoded) {
+		map.put(hash, encoded);
 	}
 
 }

@@ -6,6 +6,8 @@ import com.google.protobuf.ByteString;
 
 public interface Store2 {
 
-	TreeNode get(ByteString hash);
-	ByteString put(TreeNode n);
+	ByteString get(ByteString hash);
+	@Deprecated
+	ByteString put(TreeNode node);
+	void put(ByteString hash, ByteString encoded);
 }

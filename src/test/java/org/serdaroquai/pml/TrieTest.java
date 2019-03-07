@@ -93,14 +93,12 @@ public class TrieTest {
 		
 		TrieImpl2 trie = new TrieImpl2(store);
 		
-//		assertEquals("verb", trie.get(hashRoot, ByteString.copyFromUtf8("do")).toStringUtf8());
-//		assertEquals("puppy", trie.get(hashRoot, ByteString.copyFromUtf8("dog")).toStringUtf8());
-		assertEquals("coin", trie.get(hashRoot, ByteString.copyFromUtf8("doge")).toStringUtf8());
-		assertEquals("stallion", trie.get(hashRoot, ByteString.copyFromUtf8("horse")).toStringUtf8());
+		assertEquals("verb", trie.get(root, ByteString.copyFromUtf8("do")).toStringUtf8());
+		assertEquals("puppy", trie.get(root, ByteString.copyFromUtf8("dog")).toStringUtf8());
+		assertEquals("coin", trie.get(root, ByteString.copyFromUtf8("doge")).toStringUtf8());
+		assertEquals("stallion", trie.get(root, ByteString.copyFromUtf8("horse")).toStringUtf8());
+		assertEquals(ByteString.EMPTY, trie.get(root, ByteString.copyFromUtf8("not exists")));
 		
-		// TODO branch nodes return the node instead of value
-		// extension nodes return the value
-	
 	}
 	
 	@Test

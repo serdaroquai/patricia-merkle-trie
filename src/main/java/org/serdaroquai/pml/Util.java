@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.protobuf.ByteString;
 
 public class Util {
 
@@ -29,6 +30,10 @@ public class Util {
 	
 	public static byte[] sha256(Node n) {
 		return sha256digest.digest(n.getHashableString().getBytes(StandardCharsets.UTF_8));
+	}
+	
+	public static ByteString sha256(ByteString raw) {
+		return ByteString.copyFrom(sha256digest.digest(raw.toByteArray()));
 	}
 	
 	public static byte[] sha256(TreeNode n) {

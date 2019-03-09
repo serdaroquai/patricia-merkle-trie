@@ -15,8 +15,9 @@ import com.google.protobuf.ByteString.ByteIterator;
  */
 public class NibbleString {
 
-	private static final byte ODD_START = 0x10;
-	private static final byte EVEN_START = 0x00;
+	public static final byte EVEN_START 	= 0b0000_0000;
+	public static final byte ODD_START 		= 0b0001_0000;
+	public static final byte TERMINAL 		= 0b0010_0000;
 	
 	private char[] nibbles; 
 	private int offset;
@@ -75,7 +76,7 @@ public class NibbleString {
 		
 	}
 
-	public static NibbleString compactDecode(ByteString bytes) {
+	public static NibbleString unpack(ByteString bytes) {
 		if (bytes.size() == 0) throw new IllegalArgumentException("Can not be empty");
 		
 		int len = bytes.size();
@@ -102,15 +103,17 @@ public class NibbleString {
 		return instance;
 	}
 	
-	public static ByteString compactEncode(NibbleString n) {
+	public static ByteString pack(NibbleString n, boolean isTerminal) {
 		int len = n.size();
 		if (len == 0) throw new IllegalStateException("Can not be empty");
 		
 		byte[] result = new byte[(len >> 1) + 1];
 		boolean odd = (len & 0x01) == 1;
 		
-		if (odd) result[0] = (byte) (ODD_START | ByteUtils.hexToNibble(n.nibbleAt(0), false));
-		else result[0] = EVEN_START;
+		byte flag = odd ? ODD_START : EVEN_START;
+		flag = (byte) (isTerminal ? flag | TERMINAL : flag);
+		
+		result[0] = odd ? (byte) (flag | ByteUtils.hexToNibble(n.nibbleAt(0), false)) : flag;
 		
 		int read = odd ? 1 : 0;
 		int write = 1;
@@ -121,6 +124,21 @@ public class NibbleString {
 		
 		return ByteString.copyFrom(result);
 	}
+	
+//	public static ByteString concat(NibbleString ...nibbles) {
+//		if (nibbles == null || nibbles.length == 0)
+//			throw new IllegalStateException("Can not be empty");
+//		
+//		int len = 0;
+//		for (NibbleString n : nibbles) len += n.size();
+//		
+//		byte[] result = new byte[(len >> 1) + 1];
+//		boolean odd = (len & 0x01) == 1;
+//		
+//		NibbleString n = nibbles[0];
+//		if (odd) result[0] = (byte) (ODD_START | ByteUtils.hexToNibble(n.nibbleAt(0), false));
+//		else result[0] = EVEN_START;
+//	}
 
 	@Override
 	public int hashCode() {

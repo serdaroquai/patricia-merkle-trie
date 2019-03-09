@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.google.protobuf.ByteString;
@@ -19,15 +18,8 @@ public class NibbleStringTest {
 			(byte) 0x56, (byte) 0x78, (byte) 0x9a, (byte) 0xbc, (byte) 0xde};
 
 	@Test
-	@Disabled
-	public void testOddFlag() {
-		byte b = 0b10;
-		System.out.println(b);
-//		a useless test I keep here to remind myself the pretty byte representation
-	}
-	@Test
 	public void testSubstring() {
-		NibbleString n = NibbleString.compactDecode(ByteString.copyFrom(ODD_LENGTH_BYTES));
+		NibbleString n = NibbleString.unpack(ByteString.copyFrom(ODD_LENGTH_BYTES));
 		final NibbleString s = n.substring(1); // 34
 		assertThrows(IllegalArgumentException.class, () -> s.nibbleAt(-1));
 		assertTrue(s.nibbleAt(0) == '3');
@@ -37,7 +29,7 @@ public class NibbleStringTest {
 	
 	@Test
 	public void testSubstringEquals() {
-		NibbleString n = NibbleString.compactDecode(ByteString.copyFrom(SAME_BYTES));
+		NibbleString n = NibbleString.unpack(ByteString.copyFrom(SAME_BYTES));
 		final NibbleString s1 = n.substring(0,2); // 34
 		final NibbleString s2 = n.substring(2,4); // 34
 		final NibbleString s3 = n.substring(1,3); // 43
@@ -61,7 +53,7 @@ public class NibbleStringTest {
 	
 	@Test
 	public void testSubstringOfSubstring() {
-		NibbleString n = NibbleString.compactDecode(ByteString.copyFrom(LONG_BYTES));
+		NibbleString n = NibbleString.unpack(ByteString.copyFrom(LONG_BYTES));
 		final NibbleString s = n.substring(2,9); // 23 45 67 8
 		
 		assertEquals(7, s.size());
@@ -86,7 +78,7 @@ public class NibbleStringTest {
 	
 	@Test
 	public void testOddLengthCompactDecode() {
-		NibbleString n = NibbleString.compactDecode(ByteString.copyFrom(ODD_LENGTH_BYTES));
+		NibbleString n = NibbleString.unpack(ByteString.copyFrom(ODD_LENGTH_BYTES));
 		assertTrue(n.nibbleAt(0) == '2');
 		assertTrue(n.nibbleAt(1) == '3');
 		assertTrue(n.nibbleAt(2) == '4');
@@ -95,7 +87,7 @@ public class NibbleStringTest {
 	
 	@Test
 	public void testEvenLengthCompactDecode() {
-		NibbleString n = NibbleString.compactDecode(ByteString.copyFrom(EVEN_LENGTH_BYTES));
+		NibbleString n = NibbleString.unpack(ByteString.copyFrom(EVEN_LENGTH_BYTES));
 		assertTrue(n.nibbleAt(0) == '3');
 		assertTrue(n.nibbleAt(1) == '4');
 		assertEquals(n.size(), 2);
@@ -104,22 +96,22 @@ public class NibbleStringTest {
 	@Test
 	public void testOddLengthCompactEncode() {
 		ByteString expected = ByteString.copyFrom(ODD_LENGTH_BYTES);
-		NibbleString n = NibbleString.compactDecode(expected);
-		ByteString actual = NibbleString.compactEncode(n);
+		NibbleString n = NibbleString.unpack(expected);
+		ByteString actual = NibbleString.pack(n, false);
 		assertEquals(expected, actual);
 	}
 	
 	@Test
 	public void testEvenLengthCompactEncode() {
 		ByteString expected = ByteString.copyFrom(EVEN_LENGTH_BYTES);
-		NibbleString n = NibbleString.compactDecode(expected);
-		ByteString actual = NibbleString.compactEncode(n);
+		NibbleString n = NibbleString.unpack(expected);
+		ByteString actual = NibbleString.pack(n, false);
 		assertEquals(expected, actual);
 	}
 	
 	@Test
 	public void testBoundsCheck() {
-		final NibbleString n = NibbleString.compactDecode(ByteString.copyFrom(EVEN_LENGTH_BYTES));
+		final NibbleString n = NibbleString.unpack(ByteString.copyFrom(EVEN_LENGTH_BYTES));
 		assertThrows(IllegalArgumentException.class, () -> n.nibbleAt(2));
 		assertThrows(IllegalArgumentException.class, () -> n.nibbleAt(-1));
 	}

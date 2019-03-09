@@ -3,6 +3,7 @@ package org.serdaroquai.pml;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.serdaroquai.pml.NodeProto.TrieNode;
 
@@ -10,8 +11,37 @@ import com.google.protobuf.ByteString;
 
 public class TrieTest {
 
+	@Test
+	@Disabled
+	public void testUpdateEmptyTrie() {
+		Store s = new MemoryStore();
+		TrieImpl t = new TrieImpl(s);
+		
+		ByteString keyBytes = ByteString.copyFromUtf8("key");
+		t.update(keyBytes , ByteString.copyFromUtf8("value"));
+		
+		assertEquals("value", t.get(keyBytes).toStringUtf8());
+	}
 	
 	@Test
+	public void testUpdateTrie() {
+		
+		Store s = new MemoryStore();
+		TrieImpl t = new TrieImpl(s);
+		
+		t.update("do","verb");
+		t.update("dog","puppy");
+		t.update("doge","coin");
+		t.update("horse","stallion");
+		
+		assertEquals("verb", t.get("do"));
+		assertEquals("puppy", t.get("dog"));
+		assertEquals("coin", t.get("doge"));
+		assertEquals("stallion", t.get("horse"));
+	}
+	
+	@Test
+	@Disabled
 	public void testGet() {
 		
 		

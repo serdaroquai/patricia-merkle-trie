@@ -1,11 +1,11 @@
 package org.serdaroquai.pml;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 import com.google.protobuf.ByteString;
 
@@ -21,10 +21,10 @@ public class NibbleStringTest {
 	public void testSubstring() {
 		NibbleString n = NibbleString.unpack(ByteString.copyFrom(ODD_LENGTH_BYTES));
 		final NibbleString s = n.substring(1); // 34
-		assertThrows(IllegalArgumentException.class, () -> s.nibbleAt(-1));
+//		assertThrows(IllegalArgumentException.class, () -> s.nibbleAt(-1));
 		assertTrue(s.nibbleAt(0) == '3');
 		assertTrue(s.nibbleAt(1) == '4');
-		assertThrows(IllegalArgumentException.class, () -> s.nibbleAt(2));
+//		assertThrows(IllegalArgumentException.class, () -> s.nibbleAt(2));
 	}
 	
 	@Test
@@ -51,13 +51,13 @@ public class NibbleStringTest {
 		assertEquals("6f6765", n.toString());
 	}
 	
-	@Test
+	@Test(expected=IllegalArgumentException.class)
 	public void testSubstringOfSubstring() {
 		NibbleString n = NibbleString.unpack(ByteString.copyFrom(LONG_BYTES));
 		final NibbleString s = n.substring(2,9); // 23 45 67 8
 		
 		assertEquals(7, s.size());
-		assertThrows(IllegalArgumentException.class, () -> s.nibbleAt(-1));
+//		assertThrows(IllegalArgumentException.class, () -> s.nibbleAt(-1));
 		assertTrue(s.nibbleAt(0) == '2');
 		assertTrue(s.nibbleAt(1) == '3');
 		assertTrue(s.nibbleAt(2) == '4');
@@ -65,15 +65,16 @@ public class NibbleStringTest {
 		assertTrue(s.nibbleAt(4) == '6');
 		assertTrue(s.nibbleAt(5) == '7');
 		assertTrue(s.nibbleAt(6) == '8');
-		assertThrows(IllegalArgumentException.class, () -> s.nibbleAt(7));
+//		assertThrows(IllegalArgumentException.class, () -> s.nibbleAt(7));
 		
 		final NibbleString s2 = s.substring(2,5); // 45 6
 		assertEquals(3, s2.size());
-		assertThrows(IllegalArgumentException.class, () -> s2.nibbleAt(-1));
+//		assertThrows(IllegalArgumentException.class, () -> s2.nibbleAt(-1));
 		assertTrue(s2.nibbleAt(0) == '4');
 		assertTrue(s2.nibbleAt(1) == '5');
 		assertTrue(s2.nibbleAt(2) == '6');
-		assertThrows(IllegalArgumentException.class, () -> s2.nibbleAt(3));
+		s2.nibbleAt(3); // throws
+//		assertThrows(IllegalArgumentException.class, () -> s2.nibbleAt(3));
 	}
 	
 	@Test
@@ -109,10 +110,9 @@ public class NibbleStringTest {
 		assertEquals(expected, actual);
 	}
 	
-	@Test
+	@Test(expected=IllegalArgumentException.class)
 	public void testBoundsCheck() {
 		final NibbleString n = NibbleString.unpack(ByteString.copyFrom(EVEN_LENGTH_BYTES));
-		assertThrows(IllegalArgumentException.class, () -> n.nibbleAt(2));
-		assertThrows(IllegalArgumentException.class, () -> n.nibbleAt(-1));
+		n.nibbleAt(2);
 	}
 }

@@ -1,9 +1,10 @@
 package org.serdaroquai.pml;
 
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 import org.serdaroquai.pml.NodeProto.TrieNode;
 
 import com.google.protobuf.ByteString;

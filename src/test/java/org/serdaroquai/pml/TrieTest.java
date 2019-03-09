@@ -1,12 +1,13 @@
 package org.serdaroquai.pml;
 
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import com.google.protobuf.ByteString;
 
@@ -15,10 +16,33 @@ public class TrieTest {
 	Trie<String,String> t;
 	Store s;
 	
-	@BeforeEach
+	@Before
 	public void setup() {
 		s = new MemoryStore();
 		t = Trie.create(s);
+	}
+	
+	@Test
+	public void testRootHashEquality() {
+		// same state = same root hash?
+		t.put("do", "verb");
+		t.put("dog", "puppy");
+		t.put("doge", "coin");
+		ByteString expected = t.put("horse", "stallion"); // expected roothash
+		
+		t.put("do", "no-verb");
+		ByteString expected2 = t.put("dog", "no-puppy");
+		t.put("doge", "no-coin");
+		ByteString diffHash = t.put("horse", "no-stallion");
+		
+		t.put("doge", "coin");
+		ByteString actual2 = t.put("horse", "stallion");
+		t.put("do", "verb");
+		ByteString actual = t.put("dog", "puppy");
+		
+		assertNotEquals(expected, diffHash);
+		assertEquals(expected, actual);
+		assertEquals(expected2, actual2);
 	}
 	
 	@Test

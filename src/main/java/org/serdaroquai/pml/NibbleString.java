@@ -1,5 +1,8 @@
 package org.serdaroquai.pml;
 
+import static org.serdaroquai.pml.Common.hexToNibble;
+import static org.serdaroquai.pml.Common.nibbleToHex;
+
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ByteString.ByteIterator;
 
@@ -86,8 +89,8 @@ public class NibbleString {
 		ByteIterator it = bytes.iterator();
 		while (it.hasNext()) {
 			b = it.nextByte();
-			instance.nibbles[w++] = ByteUtils.nibbleToHex(b, true);
-			instance.nibbles[w++] = ByteUtils.nibbleToHex(b, false);
+			instance.nibbles[w++] = nibbleToHex(b, true);
+			instance.nibbles[w++] = nibbleToHex(b, false);
 		}
 		
 		instance.offset = 0;
@@ -115,17 +118,17 @@ public class NibbleString {
 		
 		int w = 0, r = 1;
 		// TODO FIX ME UGLY CONVERSION
-		byte flag = (byte) (ByteUtils.nibbleToHex(bytes.byteAt(0), true) - '0'); 
+		byte flag = (byte) (nibbleToHex(bytes.byteAt(0), true) - '0'); 
 		if ((flag & 0x01) == 1) {
 			instance.nibbles = new char[(len << 1) - 1];
-			instance.nibbles[w++] = ByteUtils.nibbleToHex(bytes.byteAt(0), false);
+			instance.nibbles[w++] = nibbleToHex(bytes.byteAt(0), false);
 		} else {
 			instance.nibbles = new char[(len << 1) - 2];
 		}
 		
 		while (r<len) {
-			instance.nibbles[w++] = ByteUtils.nibbleToHex(bytes.byteAt(r), true);
-			instance.nibbles[w++] = ByteUtils.nibbleToHex(bytes.byteAt(r++), false);
+			instance.nibbles[w++] = nibbleToHex(bytes.byteAt(r), true);
+			instance.nibbles[w++] = nibbleToHex(bytes.byteAt(r++), false);
 		}
 		
 		instance.offset = 0;
@@ -154,16 +157,20 @@ public class NibbleString {
 		byte flag = odd ? ODD_START : EVEN_START;
 		flag = (byte) (isTerminal ? flag | TERMINAL : flag);
 		
-		result[0] = odd ? (byte) (flag | ByteUtils.hexToNibble(n.nibbleAt(0), false)) : flag;
+		result[0] = odd ? (byte) (flag | hexToNibble(n.nibbleAt(0), false)) : flag;
 		
 		int read = odd ? 1 : 0;
 		int write = 1;
 		while (read < len) {
-			result[write++] = (byte) (ByteUtils.hexToNibble(n.nibbleAt(read++), true) 
-					| ByteUtils.hexToNibble(n.nibbleAt(read++), false));
+			result[write++] = (byte) (hexToNibble(n.nibbleAt(read++), true) 
+					| hexToNibble(n.nibbleAt(read++), false));
 		}
 		
 		return ByteString.copyFrom(result);
+	}
+	
+	public static boolean isTerminal(ByteString packed) {
+		return (packed.byteAt(0) & TERMINAL) == TERMINAL;
 	}
 	
 	@Override

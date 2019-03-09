@@ -4,8 +4,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.ByteString.ByteIterator;
 
 /**
- * Immutable class representing an arbitrary length of nibbles. Can only be copied from
- * ByteStrings that are compact encoded.
+ * Immutable class representing an arbitrary length of nibbles.
  * 
  * Since underlying char[] is immutable substring() methods return a view of same array 
  * so they are fast.
@@ -40,10 +39,26 @@ public class NibbleString {
 		return length;
 	}
 	
+	/**
+	 * Returns a view of the underlying NibbleString bounded by the given indices,
+	 * without copying its underlying byte[].
+	 * 
+	 * @param startIndex
+	 * @param endIndex
+	 * @return
+	 */
 	public NibbleString substring(int startIndex) {
 		return substring(startIndex, size());
 	}
 	
+	/**
+	 * Returns a view of the underlying NibbleString bounded by the given indices,
+	 * without copying its underlying byte[].
+	 * 
+	 * @param startIndex
+	 * @param endIndex
+	 * @return
+	 */
 	public NibbleString substring(int startIndex, int endIndex) {
 		final int newLength = endIndex - startIndex;
 		if ((startIndex | endIndex | newLength | (length - newLength)) < 0) 
@@ -52,9 +67,15 @@ public class NibbleString {
 		return new NibbleString(nibbles, offset + startIndex, newLength);
 	}
 	
-	// TODO, this will be needed to convert an even length 
-	// unencoded bytestring into a nibblestring. perhaps used as key?
-	// TODO refactor and test
+	/**
+	 * Converts given ByteString to NibbleString by copying the underlying byte[] 
+	 * to a char[]
+	 * 
+	 * Resulting NibbleString is always oddLength and is not packed.
+	 * 
+	 * @param bytes
+	 * @return
+	 */
 	public static NibbleString from(ByteString bytes) {
 		NibbleString instance = new NibbleString();
 		int len = bytes.size() == 0 ? 0 : bytes.size() << 1;
@@ -76,6 +97,16 @@ public class NibbleString {
 		
 	}
 
+	/**
+	 * Unpacks a packed ByteString into a NibbleString. 
+	 * 
+	 * First nibble of a packed ByeString always contains leading flags representing 
+	 *  1) nibble is odd/even length. (Since a byte can store 2 nibbles)
+	 * 	2) nibble is a key for a terminal node 
+	 * 
+	 * @param bytes
+	 * @return
+	 */
 	public static NibbleString unpack(ByteString bytes) {
 		if (bytes.size() == 0) throw new IllegalArgumentException("Can not be empty");
 		
@@ -103,6 +134,17 @@ public class NibbleString {
 		return instance;
 	}
 	
+	/**
+	 * Packs a NibbleString into a packed ByteString.
+	 * 
+	 * First nibble of a packed ByeString always contains leading flags representing 
+	 *  1) nibble is odd/even length. (Since a byte can store 2 nibbles)
+	 * 	2) nibble is a key for a terminal node
+	 * 
+	 * @param bytes
+	 * @param isTerminal
+	 * @return
+	 */
 	public static ByteString pack(NibbleString n, boolean isTerminal) {
 		int len = n.size();
 		if (len == 0) throw new IllegalStateException("Can not be empty");
@@ -125,21 +167,6 @@ public class NibbleString {
 		return ByteString.copyFrom(result);
 	}
 	
-//	public static ByteString concat(NibbleString ...nibbles) {
-//		if (nibbles == null || nibbles.length == 0)
-//			throw new IllegalStateException("Can not be empty");
-//		
-//		int len = 0;
-//		for (NibbleString n : nibbles) len += n.size();
-//		
-//		byte[] result = new byte[(len >> 1) + 1];
-//		boolean odd = (len & 0x01) == 1;
-//		
-//		NibbleString n = nibbles[0];
-//		if (odd) result[0] = (byte) (ODD_START | ByteUtils.hexToNibble(n.nibbleAt(0), false));
-//		else result[0] = EVEN_START;
-//	}
-
 	@Override
 	public int hashCode() {
         if (nibbles == null)

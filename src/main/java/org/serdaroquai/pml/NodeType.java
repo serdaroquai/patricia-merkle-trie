@@ -2,6 +2,7 @@ package org.serdaroquai.pml;
 
 public enum NodeType {
 	BLANK(false),
+	HASH(false),
 	LEAF(true),
 	EXTENSION(true),
 	BRANCH(false);

@@ -225,12 +225,20 @@ public class TrieImpl {
 		return (bs.byteAt(0) & NibbleString.TERMINAL) == NibbleString.TERMINAL;
 	}
 	
-	/* 
-	 * returns the ByteString of node OR stores the node and returns the hash
-	 * returned ByteString is always <= 34 so you can store it in parent node 
+	/**
+	 * Encodes a given node into a ByteString using Protocol Buffers. 
+	 * returns the resulting ByteString if length <= 34, else stores it and returns 
+	 * its hash.
+	 * 
+	 * Only exception to this rule is, if the node to be encoded is the root node, 
+	 * a hash is generated regardless of length.
+	 * 
+	 * Returned ByteString length is always <= 34.
+	 * 
+	 * @param node
+	 * @return
 	 */
 	private ByteString encodeNode(TrieNode node) {
-		System.out.println(Util.toString(node));
 		if (EMPTY_NODE.equals(node)) return EMPTY_NODE_BYTES;
 		ByteString encoded = node.toByteString();
 		if (encoded.size() < 34 && node != this.rootNode) return encoded;
@@ -242,14 +250,21 @@ public class TrieImpl {
 		}
 	}
 
-	/*
-	 * Avoiding exceptions here to increase performance, hence introduced a single 
-	 * element TrieNode that only holds a hash value.
+	/**
+	 * Decodes an encoded TrieNode protobuff bytestring back into a TrieNode object.
 	 * 
-	 * byte length becomes 34 per hash instead of 32.
+	 * If the given bytes are of type TrieNode.HASH, then actual node representing 
+	 * the hash is fetched from the store and returned.
+	 * 
+	 * Avoiding casting by exceptions here to increase performance, therefore introduced 
+	 * a single element TrieNode of type HASH that holds a single 32 byte hash value.
+	 * 
+	 * Hence the total byte length became 34 instead of 32.
 	 * 
 	 * TODO take a look at https://developers.google.com/protocol-buffers/docs/encoding
 	 * 
+	 * @param bytes
+	 * @return
 	 */
 	private TrieNode decodeToNode(ByteString bytes) {
 		
@@ -257,16 +272,24 @@ public class TrieImpl {
 		
 		try {
 			TrieNode node = TrieNode.parseFrom(bytes);
-			if (node.getItemCount() == 1) // This is a hash node
+			if (NodeType.HASH == getNodeType(node)) 
 				return TrieNode.parseFrom(store.get(bytes));
 			else
-				return node; 
+				return node;
 			
-		} catch (InvalidProtocolBufferException e) {}
+		} catch (InvalidProtocolBufferException e) {
+			throw new AssertionError("Invalid TrieNode bytes. This should never happen");
+		}
 		
-		throw new AssertionError("Never happen");
 	}
-	
+	/**
+	 * Returns the stored value stored in given path
+	 * 
+	 * @param node TrieNode
+	 * @param path path of value relative to the given TrieNode
+	 * 
+	 * @return value
+	 */
 	private ByteString getHelper(TrieNode node, NibbleString path) {
 		NodeType type = getNodeType(node);
 		
@@ -297,23 +320,19 @@ public class TrieImpl {
 	}
 	
 	private NodeType getNodeType(TrieNode node) {
-		if (EMPTY_NODE.equals(node)) 
-			return NodeType.BLANK;
+		if (EMPTY_NODE.equals(node)) return NodeType.BLANK;
 		
-		if (node.getItemCount() == 2) {
-			
+		switch(node.getItemCount()) {
+		case 1: 
+			return NodeType.HASH;
+		case 2: 
 			ByteString key = node.getItem(0);
-			if (isTerminal(key)) 
-				return NodeType.LEAF;
-			else 
-				return NodeType.EXTENSION;
-		}
-		
-		if (node.getItemCount() == 17) {
+			return isTerminal(key) ? NodeType.LEAF : NodeType.EXTENSION;
+		case 17: 
 			return NodeType.BRANCH;
+		default:
+			throw new AssertionError("Unrecognized encoded Node format");
 		}
-		
-		throw new AssertionError("Impossible");
 	}
 
 }

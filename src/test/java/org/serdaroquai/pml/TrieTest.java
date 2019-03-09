@@ -105,6 +105,28 @@ public class TrieTest {
 	}
 	
 	@Test
+	public void testUpdateExtensionNodeWithRemainingKeySizeOne() {
+//		(bce6..0419): [006b6579,(2b41..e6be)]
+//		(2b41..e6be): [,,,,,,[3c6f6e67,newValue],,,,,,,,,,value]
+//		---
+//		(cded..ab0f): [16b657,(65ae..11d9)]
+//		(65ae..11d9): [,,,,,[20,someValue],,,,(2b41..e6be),,,,,,,]
+//		(2b41..e6be): [,,,,,,[3c6f6e67,newValue],,,,,,,,,,value]
+		
+		t.put("key", "value");
+		ByteString rootHash = t.put("keylong", "newValue");
+		ByteString newRootHash = t.put("keu", "someValue"); // key <6b 65 79> keu <6b 65 75>
+		
+		assertNotNull(newRootHash);
+		assertNotEquals(rootHash, newRootHash);
+		
+		assertEquals("value", t.get("key"));
+		assertEquals("newValue", t.get("keylong"));
+		assertEquals("someValue", t.get("keu"));
+		
+	}
+	
+	@Test
 	public void testUpdateExtensionNode() {
 //		(bce6..0419): [006b6579,(2b41..e6be)]
 //		(2b41..e6be): [,,,,,,[3c6f6e67,newValue],,,,,,,,,,value]

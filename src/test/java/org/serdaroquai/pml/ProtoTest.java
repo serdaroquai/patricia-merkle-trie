@@ -13,17 +13,14 @@ public class ProtoTest {
 
 	@Test
 	public void testBranchNode() throws InvalidProtocolBufferException {
-		// TODO mb a good idea to make a prototype empty branch node so that 
-		// we can utilize TreeNode.newBuilder(prototype)?
-		
-		TrieNode.Builder b = NodeProto.TrieNode.newBuilder();
-		
-		for (int i=0; i<17; i++) b.addItem(ByteString.EMPTY);
-		TrieNode n = b.build();
+
+		TrieNode n = TrieNode.newBuilder(Common.BRANCH_NODE_PROTOTYPE).build();
 		ByteString bytes = n.toByteString();
 		n = TrieNode.parseFrom(bytes);
 
 		assertEquals(17, n.getItemCount());
-		assertEquals(ByteString.EMPTY, n.getItem(16));
+		for (int i=0; i <n.getItemCount(); i++) {
+			assertEquals(ByteString.EMPTY, n.getItem(i));			
+		}
 	}
 }

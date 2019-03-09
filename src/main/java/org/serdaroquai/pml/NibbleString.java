@@ -147,7 +147,6 @@ public class NibbleString {
 	 */
 	public static ByteString pack(NibbleString n, boolean isTerminal) {
 		int len = n.size();
-		if (len == 0) throw new IllegalStateException("Can not be empty");
 		
 		byte[] result = new byte[(len >> 1) + 1];
 		boolean odd = (len & 0x01) == 1;

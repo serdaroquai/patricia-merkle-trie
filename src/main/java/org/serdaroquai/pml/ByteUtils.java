@@ -1,21 +1,11 @@
 package org.serdaroquai.pml;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
-import com.google.protobuf.ByteString;
-
+@Deprecated
 public class ByteUtils {
 
-	/*
-	 * first nibble is 1 for odd length, 0 for even. even length is accompanied by another
-	 * 0 nibble in order to pad correctly
-	 */
-	private static final byte ODD_START = 0x10;
-	private static final byte EVEN_START = 0x00;
-	
 	private static final byte[] hexToNibbles = new byte[103];
 	private static final char[] nibblesToHex = new char[16];
+	
 	static {
 		//hex to nibbles
 		hexToNibbles[48]=0x00;
@@ -58,65 +48,6 @@ public class ByteUtils {
 		nibblesToHex[13] = 'd';
 		nibblesToHex[14] = 'e';
 		nibblesToHex[15] = 'f';
-		
-	}
-	
-	public static class NibbleIterator implements Iterator<Character> {
-
-		private ByteString bytes;
-		private int i = -1;
-		
-		public static Iterator<Character> from(ByteString bytes) {
-			return new NibbleIterator(bytes);
-		}
-		
-		private NibbleIterator(ByteString bytes) { this.bytes = bytes;}
-		
-		@Override
-		public boolean hasNext() { return ((i + 1) >> 1) < bytes.size();}
-
-		@Override
-		public Character next() {
-			if (!hasNext()) throw new NoSuchElementException();
-			i++;
-			return nibbleToHex(bytes.byteAt(i >> 1), (i & 0x01) == 0);
-		}
-		
-	}
-	
-	
-	public static String compactDecode(ByteString bytes) {
-		if (bytes.size() == 0) throw new IllegalStateException("Can not be empty");
-		
-		StringBuilder sb = new StringBuilder();
-		
-		if (nibbleToHex(bytes.byteAt(0), true) == '1') sb.append(nibbleToHex(bytes.byteAt(0), false));
-		
-		for (int i=1; i < bytes.size(); i++) {
-			sb.append(nibbleToHex(bytes.byteAt(i), true)).append(nibbleToHex(bytes.byteAt(i), false));
-		}
-		
-		return sb.toString();
-	}
-	
-	// TODO will possibly need the Node termination status later
-	public static ByteString compactEncode(CharSequence cs) {
-		int len = cs.length();
-		if (len == 0) throw new IllegalStateException("Can not be empty");
-		
-		byte[] result = new byte[(len >> 1) + 1];
-		boolean odd = (len & 0x01) == 1;
-		
-		if (odd) result[0] = (byte) (ODD_START | hexToNibble(cs.charAt(0), false));
-		else result[0] = EVEN_START;
-		
-		int read = odd ? 1 : 0;
-		int write = 1;
-		while (read < len) {
-			result[write++] = (byte) (hexToNibble(cs.charAt(read++), true) | hexToNibble(cs.charAt(read++), false));
-		}
-		
-		return ByteString.copyFrom(result);
 	}
 	
 	/*
@@ -126,13 +57,13 @@ public class ByteUtils {
 	 * 		left  aligned 'B' ==> 1011 0000
 	 * 		right aligned 'B' ==> 0000 1011
 	 */
-	protected static byte hexToNibble(char hex, boolean alignLeft) {
+	public static byte hexToNibble(char hex, boolean alignLeft) {
 		//TODO bounds check valid hex? 0..9
 		return (byte) (alignLeft ? hexToNibbles[hex] << 4 : hexToNibbles[hex]);
 	}
 	
 	
-	protected static char nibbleToHex(byte b, boolean leftNibble) {
+	public static char nibbleToHex(byte b, boolean leftNibble) {
 		return leftNibble ? nibblesToHex[((b & 0xF0) >> 4)] : nibblesToHex[(b & 0x0F)];
 	}
 	

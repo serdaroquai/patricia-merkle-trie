@@ -10,4 +10,6 @@ public interface Store {
 	@Deprecated
 	ByteString put(TrieNode node);
 	void put(ByteString hash, ByteString encoded);
+	
+	void dumpAll();
 }

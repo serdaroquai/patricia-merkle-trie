@@ -50,17 +50,14 @@ import com.google.protobuf.InvalidProtocolBufferException;
  */
 public class TrieImpl {
 	
-	public static final TrieNode EMPTY_NODE = TrieNode.newBuilder().build();
-	public static final ByteString EMPTY_NODE_BYTES = EMPTY_NODE.toByteString();
-	
 	Store store;
 	TrieNode rootNode;
 	ByteString rootHash;
 	
 	public TrieImpl(Store store) {
 		this.store = store;
-		this.rootNode = EMPTY_NODE;
-		this.rootHash = EMPTY_NODE_BYTES;
+		this.rootNode = Common.EMPTY_NODE;
+		this.rootHash = Common.EMPTY_NODE_BYTES;
 	}
 	
 	//TODO swap this out when initializing with a serializer
@@ -86,7 +83,7 @@ public class TrieImpl {
 	 * @return the new version of self node
 	 */
 	private TrieNode updateHelper(TrieNode node, NibbleString path, ByteString value) {
-		NodeType type = getNodeType(node);
+		NodeType type = Common.getNodeType(node);
 		
 		if (type == NodeType.BLANK) {
 			return TrieNode.newBuilder()
@@ -116,7 +113,7 @@ public class TrieImpl {
 	}
 	
 	private TrieNode updateKeyValueHelper(TrieNode node, NibbleString path, ByteString value) {
-		NodeType type = getNodeType(node);
+		NodeType type = Common.getNodeType(node);
 		NibbleString key = NibbleString.unpack(node.getItem(0));
 		
 		// find longest common prefix
@@ -149,14 +146,14 @@ public class TrieImpl {
 				ByteString leafEncoded = encodeNode(leaf);
 				
 				int index = ByteUtils.nibbleToIndex(remainingPath.nibbleAt(0));
-				newNode = TrieNode.newBuilder(Util.BRANCH_NODE_PROTOTYPE)
+				newNode = TrieNode.newBuilder(Common.BRANCH_NODE_PROTOTYPE)
 						.setItem(index, leafEncoded)
 						.setItem(16, node.getItem(1))
 						.build();
 			}
 		
 		} else {
-			TrieNode.Builder builder = TrieNode.newBuilder(Util.BRANCH_NODE_PROTOTYPE);
+			TrieNode.Builder builder = TrieNode.newBuilder(Common.BRANCH_NODE_PROTOTYPE);
 			
 			if (remainingKey.size() == 1 && type == NodeType.EXTENSION) {
 				builder.setItem(ByteUtils.nibbleToIndex(remainingKey.nibbleAt(0)), node.getItem(1));
@@ -221,10 +218,6 @@ public class TrieImpl {
 		return getHelper(rootNode, NibbleString.from(key));
 	}
 	
-	private boolean isTerminal(ByteString bs) {
-		return (bs.byteAt(0) & NibbleString.TERMINAL) == NibbleString.TERMINAL;
-	}
-	
 	/**
 	 * Encodes a given node into a ByteString using Protocol Buffers. 
 	 * returns the resulting ByteString if length <= 34, else stores it and returns 
@@ -239,11 +232,12 @@ public class TrieImpl {
 	 * @return
 	 */
 	private ByteString encodeNode(TrieNode node) {
-		if (EMPTY_NODE.equals(node)) return EMPTY_NODE_BYTES;
+		
+		if (Common.EMPTY_NODE.equals(node)) return Common.EMPTY_NODE_BYTES;
 		ByteString encoded = node.toByteString();
 		if (encoded.size() < 34 && node != this.rootNode) return encoded;
 		else {
-			ByteString hash = Util.sha256(encoded);
+			ByteString hash = Common.sha256(encoded);
 			ByteString hashNode = TrieNode.newBuilder().addItem(hash).build().toByteString();
 			store.put(hashNode, encoded);
 			return hashNode;
@@ -268,11 +262,11 @@ public class TrieImpl {
 	 */
 	private TrieNode decodeToNode(ByteString bytes) {
 		
-		if (EMPTY_NODE_BYTES.equals(bytes)) return EMPTY_NODE;
+		if (Common.EMPTY_NODE_BYTES.equals(bytes)) return Common.EMPTY_NODE;
 		
 		try {
 			TrieNode node = TrieNode.parseFrom(bytes);
-			if (NodeType.HASH == getNodeType(node)) 
+			if (NodeType.HASH == Common.getNodeType(node)) 
 				return TrieNode.parseFrom(store.get(bytes));
 			else
 				return node;
@@ -291,10 +285,10 @@ public class TrieImpl {
 	 * @return value
 	 */
 	private ByteString getHelper(TrieNode node, NibbleString path) {
-		NodeType type = getNodeType(node);
+		NodeType type = Common.getNodeType(node);
 		
 		if (type == NodeType.BLANK)
-			return EMPTY_NODE_BYTES;
+			return Common.EMPTY_NODE_BYTES;
 		
 		if (type == NodeType.BRANCH) {
 			if (path.size() == 0)
@@ -306,33 +300,19 @@ public class TrieImpl {
 		
 		NibbleString key = NibbleString.unpack(node.getItem(0));
 		if (type == NodeType.LEAF) {
-			return path.equals(key) ? node.getItem(1) : EMPTY_NODE_BYTES;
+			return path.equals(key) ? node.getItem(1) : Common.EMPTY_NODE_BYTES;
 		}
 		
 		if (type == NodeType.EXTENSION) {
 			if (key.equals(path.substring(0, key.size())))
 				return getHelper(decodeToNode(node.getItem(1)), path.substring(key.size()));
 			else
-				return EMPTY_NODE_BYTES;
+				return Common.EMPTY_NODE_BYTES;
 		}
 		
 		throw new AssertionError("Not possible");
 	}
 	
-	private NodeType getNodeType(TrieNode node) {
-		if (EMPTY_NODE.equals(node)) return NodeType.BLANK;
-		
-		switch(node.getItemCount()) {
-		case 1: 
-			return NodeType.HASH;
-		case 2: 
-			ByteString key = node.getItem(0);
-			return isTerminal(key) ? NodeType.LEAF : NodeType.EXTENSION;
-		case 17: 
-			return NodeType.BRANCH;
-		default:
-			throw new AssertionError("Unrecognized encoded Node format");
-		}
-	}
+	
 
 }

@@ -3,32 +3,90 @@ package org.serdaroquai.pml;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.serdaroquai.pml.NodeProto.TrieNode;
 
 import com.google.protobuf.ByteString;
 
+/*
+do <64 6f> : 'verb'
+dog <64 6f 67> : 'puppy'
+doge <64 6f 67 65> : 'coin'
+horse <68 6f 72 73 65> : 'stallion'
+
+rootHash: [ <16>, hashA ]
+hashA:    [ <>, <>, <>, <>, hashB, <>, <>, <>, hashC, <>, <>, <>, <>, <>, <>, <>, <> ]
+hashC:    [ <20 6f 72 73 65>, 'stallion' ]
+hashB:    [ <00 6f>, hashD ]
+hashD:    [ <>, <>, <>, <>, <>, <>, hashE, <>, <>, <>, <>, <>, <>, <>, <>, <>, 'verb' ]
+hashE:    [ <17>, hashF ]
+hashF:    [ <>, <>, <>, <>, <>, <>, hashG, <>, <>, <>, <>, <>, <>, <>, <>, <>, 'puppy' ]
+hashG:    [ <35>, 'coin' ]
+*/
 public class TrieTest {
+	
+	TrieImpl t;
+	Store s;
+	
+	@BeforeEach
+	public void setup() {
+		s = new MemoryStore();
+		t = new TrieImpl(s);
+	}
+	
+	@Test
+//	@Disabled
+	public void testUpdateBranch() {
+
+		t.update("d", "vd");
+		t.update("e", "ve");
+		t.update("p", "vp");
+
+		s.dumpAll();
+		
+		assertEquals("vd", t.get("d"));
+		assertEquals("ve", t.get("e"));
+		assertEquals("vp", t.get("p"));
+		
+	}
 
 	@Test
-	public void testUpdateEmptyTrie() {
-		Store s = new MemoryStore();
-		TrieImpl t = new TrieImpl(s);
-		
+	@Disabled
+	public void testUpdateKV() {
+		// root = []
+		t.update("d", "vd");
+		System.out.println("---");
+		// root 	= [<2064>, "vd"]
+		t.update("e", "ve");
+		System.out.println("---");
+		// root 	= [<16>, hashA]
+		// hashA	= [,,,,hashB,hashC,,,,,]
+		// hashB	= [<20>, "vd"]
+		// hashC	= [<20>, "ve"]
+		assertEquals("vd", t.get("d"));
+		assertEquals("ve", t.get("e"));
+	}
+	
+	@Test
+	@Disabled
+	public void testUpdateNodeBlank() {
 		t.update("key", "value");
 		assertEquals("value", t.get("key"));
 	}
 	
 	@Test
+	@Disabled
 	public void testUpdateTrie() {
-		
-		Store s = new MemoryStore();
-		TrieImpl t = new TrieImpl(s);
-		
 		t.update("do","verb");
+		System.out.println("---");
 		t.update("dog","puppy");
+		System.out.println("---");
 		t.update("doge","coin");
+		System.out.println("---");
 		t.update("horse","stallion");
+		System.out.println("---");
 		
 		assertEquals("verb", t.get("do"));
 		assertEquals("puppy", t.get("dog"));
@@ -37,23 +95,8 @@ public class TrieTest {
 	}
 	
 	@Test
+	@Disabled
 	public void testGet() {
-		
-		/*
-		do <64 6f> : 'verb'
-		dog <64 6f 67> : 'puppy'
-		doge <64 6f 67 65> : 'coin'
-		horse <68 6f 72 73 65> : 'stallion'
-		
-		rootHash: [ <16>, hashA ]
-		hashA:    [ <>, <>, <>, <>, hashB, <>, <>, <>, hashC, <>, <>, <>, <>, <>, <>, <>, <> ]
-		hashC:    [ <20 6f 72 73 65>, 'stallion' ]
-		hashB:    [ <00 6f>, hashD ]
-		hashD:    [ <>, <>, <>, <>, <>, <>, hashE, <>, <>, <>, <>, <>, <>, <>, <>, <>, 'verb' ]
-		hashE:    [ <17>, hashF ]
-		hashF:    [ <>, <>, <>, <>, <>, <>, hashG, <>, <>, <>, <>, <>, <>, <>, <>, <>, 'puppy' ]
-		hashG:    [ <35>, 'coin' ]
-		*/
 		
 		TrieNode.Builder builder = TrieNode.newBuilder();
 		for (int i=0; i<17; i++) builder.addItem(ByteString.EMPTY);

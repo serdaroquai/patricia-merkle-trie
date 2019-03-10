@@ -17,6 +17,7 @@ public class NibbleStringTest {
 	private static final byte[] LONG_BYTES = new byte[]{(byte) 0x10, (byte) 0x12, (byte) 0x34,
 			(byte) 0x56, (byte) 0x78, (byte) 0x9a, (byte) 0xbc, (byte) 0xde};
 
+	
 	@Test
 	public void testSubstring() {
 		NibbleString n = NibbleString.unpack(ByteString.copyFrom(ODD_LENGTH_BYTES));

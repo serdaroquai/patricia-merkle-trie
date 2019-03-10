@@ -24,7 +24,7 @@ public class Common {
 		try {
 			sha256digest = MessageDigest.getInstance("SHA-256");
 		} catch (NoSuchAlgorithmException e) {
-			throw new AssertionError("Can't happen", e);
+			throw new AssertionError(e);
 		}
 
 		// build a prototype branch node

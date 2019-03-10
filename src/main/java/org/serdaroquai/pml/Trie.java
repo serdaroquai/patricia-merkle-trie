@@ -9,7 +9,9 @@ import static org.serdaroquai.pml.Common.sha256;
 import static org.serdaroquai.pml.NibbleString.from;
 import static org.serdaroquai.pml.NibbleString.pack;
 import static org.serdaroquai.pml.NibbleString.unpack;
+import static org.serdaroquai.pml.NibbleString.isTerminal;
 
+import java.util.Deque;
 import java.util.Map;
 
 import org.serdaroquai.pml.NodeProto.TrieNode;
@@ -129,6 +131,26 @@ public class Trie<K,V>{
 		// We can solve this by backtracking starting from root node.
 		// However there will be a lot of NibbleString concatenation
 		throw new UnsupportedOperationException("Not yet Implemented");
+	}
+	
+	private void toMapHelper(TrieNode node, StringBuilder path, Map<K,V> map) {
+//		NodeType type = getNodeType(node);
+//		
+//		if (type == NodeType.BLANK) 
+//			return;
+//		
+//		int initialPathSize = path.length();
+//				
+//		if (type.isKeyValueType()) {
+//			NibbleString key = unpack(node.getItem(0));
+//			int keyLength = key.size();
+//			for (int i=0; i < keyLength; i++) path.append(key.nibbleAt(i));
+//			
+//			if (isTerminal(node.getItem(0))) {
+//				map.put(key, value)
+//			}
+//		}
+		
 	}
 	
 	private ByteString update(ByteString key, ByteString value) {

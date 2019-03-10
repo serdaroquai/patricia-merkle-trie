@@ -68,13 +68,13 @@ public class Common {
 		}
 	}
 	
-	public static String hashToShortString(ByteString hashNodeEncoded) {
-		NibbleString hashNibbles = NibbleString.from(hashNodeEncoded);
+	public static String hashToShortString(ByteString hash) {
+		NibbleString hashNibbles = NibbleString.from(hash);
 		StringBuilder sb = new StringBuilder();
 		sb.append('(');
-		for (int i=4; i< 8; i++) sb.append(hashNibbles.nibbleAsChar(i));
+		for (int i=0; i< 4; i++) sb.append(hashNibbles.nibbleAsChar(i));
 		sb.append("..");
-		for (int i=30; i< 34; i++) sb.append(hashNibbles.nibbleAsChar(i));
+		for (int i=28; i< 32; i++) sb.append(hashNibbles.nibbleAsChar(i));
 		sb.append(')');
 		return sb.toString();
 	}
@@ -87,7 +87,7 @@ public class Common {
 			case BLANK:
 				return "";
 			case HASH:
-				return hashToShortString(nodeEncoded);
+				return hashToShortString(node.getItem(0));
 			case LEAF:
 				return String.format("[%s,%s]", NibbleString.from(node.getItem(0)).toString(),
 						node.getItem(1).toStringUtf8());

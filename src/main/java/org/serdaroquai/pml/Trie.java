@@ -318,7 +318,7 @@ public class Trie<K,V>{
 	 * its hash.
 	 * 
 	 * Only exception to this rule is, if the node to be encoded is the root node, 
-	 * a hash is generated regardless of length.
+	 * in which case, a hash is generated regardless of length.
 	 * 
 	 * Returned ByteString length is always <= 34.
 	 * 
@@ -333,7 +333,7 @@ public class Trie<K,V>{
 		else {
 			ByteString hash = sha256(encoded);
 			ByteString hashNode = TrieNode.newBuilder().addItem(hash).build().toByteString();
-			store.put(hashNode, encoded);
+			store.put(hash, encoded);
 			return hashNode;
 		}
 	}
@@ -349,7 +349,10 @@ public class Trie<K,V>{
 	 * 
 	 * Hence the total byte length became 34 instead of 32.
 	 * 
-	 * TODO take a look at https://developers.google.com/protocol-buffers/docs/encoding
+	 * Note that even though HashNodes themselves are 34 bytes long, every node is still 
+	 * keyed with actual hash (32 bytes)
+	 * 
+	 * take a look at https://developers.google.com/protocol-buffers/docs/encoding
 	 * 
 	 * @param bytes
 	 * @return
@@ -361,7 +364,7 @@ public class Trie<K,V>{
 		try {
 			TrieNode node = TrieNode.parseFrom(bytes);
 			if (NodeType.HASH == getNodeType(node)) 
-				return TrieNode.parseFrom(store.get(bytes));
+				return TrieNode.parseFrom(store.get(node.getItem(0)));
 			else
 				return node;
 			

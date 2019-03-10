@@ -22,6 +22,7 @@ public class TrieTest {
 	public void setup() {
 		s = new MemoryStore();
 		t = Trie.create(s);
+		
 	}
 	
 	@Test
@@ -48,6 +49,7 @@ public class TrieTest {
 		assertEquals("puppy", oldMap.get("dog"));
 		assertEquals("coin", oldMap.get("doge"));
 		assertEquals("stallion", oldMap.get("horse"));
+
 	}
 	
 	@Test
@@ -81,6 +83,7 @@ public class TrieTest {
 		assertEquals("puppy", map.get("dog"));
 		assertEquals("coin", map.get("doge"));
 		assertEquals("stallion", map.get("horse"));
+
 	}
 	
 	@Test

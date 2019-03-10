@@ -1,0 +1,2 @@
+language: java
+build: mvn build

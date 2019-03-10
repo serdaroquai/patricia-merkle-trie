@@ -20,7 +20,7 @@ public class MemoryStore implements Store {
 	public void dumpAll() {
 		for (Entry<ByteString, ByteString> e : map.entrySet()) {
 			System.out.println(String.format("%s: %s", 
-					Common.hashToString(e.getKey()),
+					Common.hashToShortString(e.getKey()),
 					Common.toString(e.getValue())));
 		}	
 	}

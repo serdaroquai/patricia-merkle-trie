@@ -6,6 +6,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,6 +22,65 @@ public class TrieTest {
 	public void setup() {
 		s = new MemoryStore();
 		t = Trie.create(s);
+	}
+	
+	@Test
+	public void testToMapOldRootHash() {
+		
+		t.put("do", "verb");
+		t.put("dog", "puppy");
+		t.put("doge", "coin");
+		ByteString oldRootHash = t.put("horse", "stallion");
+		
+		t.put("do", "no-verb");
+		t.put("dog", "no-puppy");
+		t.put("doge", "no-coin");
+		t.put("horse", "no-stallion");
+		t.put("new", "test");
+		
+		Map<String, String> oldMap = t.toMap(oldRootHash);
+		Map<String, String> map = t.toMap();
+		
+		assertEquals(5, map.size());
+		
+		assertEquals(4, oldMap.size());
+		assertEquals("verb", oldMap.get("do"));
+		assertEquals("puppy", oldMap.get("dog"));
+		assertEquals("coin", oldMap.get("doge"));
+		assertEquals("stallion", oldMap.get("horse"));
+	}
+	
+	@Test
+	public void testToMapUpatedKey() {
+		
+		t.put("do", "verb");
+		Map<String, String> map = t.toMap();
+		
+		assertEquals(1, map.size());
+		assertEquals("verb", map.get("do"));
+		
+		t.put("do", "no-verb");
+		map = t.toMap();
+		
+		assertEquals(1, map.size());
+		assertEquals("no-verb", map.get("do"));
+	}
+	
+	@Test
+	public void testToMap() {
+		
+		t.put("do", "verb");
+		t.put("dog", "puppy");
+		t.put("doge", "coin");
+		t.put("horse", "stallion");
+		
+		Map<String, String> map = t.toMap();
+		
+		assertEquals(4, map.size());
+		assertEquals("verb", map.get("do"));
+		assertEquals("puppy", map.get("dog"));
+		assertEquals("coin", map.get("doge"));
+		assertEquals("stallion", map.get("horse"));
 	}
 	
 	@Test
@@ -106,6 +167,27 @@ public class TrieTest {
 		assertEquals("puppy", t.get("dog"));
 		assertEquals("coin", t.get("doge"));
 		assertEquals("stallion", t.get("horse"));
+		
+	}
+	
+	@Test
+	public void testUpdateBranchNodeInsertLongValue() {
+//		(bce6..0419): [006b6579,(2b41..e6be)]
+//		(2b41..e6be): [,,,,,,[3c6f6e67,newValue],,,,,,,,,,value]
+//		---
+//		(3e03..ed0b): [006b6579,(1256..6a75)]
+//		(1256..6a75): [,,,,,,[3c6f6e67,newValue],,,,,,,,,,someValue that is really long that does not fit]
+						
+						
+		t.put("key", "value");
+		ByteString rootHash = t.put("keylong", "newValue");
+		ByteString newRootHash = t.put("key", "someValue that is really long that does not fit");
+		
+		assertNotNull(newRootHash);
+		assertNotEquals(rootHash, newRootHash);
+		
+		assertEquals("newValue", t.get("keylong"));
+		assertEquals("someValue that is really long that does not fit", t.get("key"));
 		
 	}
 	

@@ -19,7 +19,6 @@ public class NibbleString implements Iterable<Byte>{
 	public static final byte EVEN_START 	= 0b0000_0000;
 	public static final byte ODD_START 		= 0b0001_0000;
 	public static final byte TERMINAL 		= 0b0010_0000;
-	
 	private static final char[] base16 = new char[]{'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
 	
 	// each nibble is one byte despite the obvious waste of space
@@ -36,10 +35,28 @@ public class NibbleString implements Iterable<Byte>{
 		this.length = length;
 	}
 	
+	/**
+	 * Returns a char as nibbles hex representation
+	 * 
+	 * 0b0000_0110 ==> '6'
+	 * 0b0000_1111 ==> 'f'
+	 * 
+	 * etc..
+	 * 
+	 * @param pos
+	 * @return
+	 */
 	public char nibbleAsChar(int pos) {
 		return base16[nibbleAsByte(pos)];
 	}
 	
+	/**
+	 * Returns nibble as byte.
+	 * Returned nibble is right aligned and can be used as an index
+	 * 
+	 * @param pos
+	 * @return
+	 */
 	public byte nibbleAsByte(int pos) {
 		if (pos < 0 || pos >= length) throw new IllegalArgumentException("Out of bounds");
 		return nibbles[pos + offset];
@@ -158,8 +175,6 @@ public class NibbleString implements Iterable<Byte>{
 		byte flag = odd ? ODD_START : EVEN_START;
 		flag = (byte) (isTerminal ? flag | TERMINAL : flag);
 		
-		// hexToNibble(n, align left)
-		
 		result[0] = odd ? (byte) (flag | n.nibbleAsByte(0)) : flag;
 		
 		int read = odd ? 1 : 0;
@@ -182,7 +197,7 @@ public class NibbleString implements Iterable<Byte>{
 
         int result = 1;
         for (int i=0; i<length; i++) {
-        	result = 31 * result + nibbleAsChar(i);
+        	result = 31 * result + nibbleAsByte(i);
         }
 
         return result;
@@ -200,7 +215,7 @@ public class NibbleString implements Iterable<Byte>{
 		if (length != other.length)
 			return false;
 		for (int i=0; i<length; i++) {
-			if (nibbleAsChar(i) != other.nibbleAsChar(i))
+			if (nibbleAsByte(i) != other.nibbleAsByte(i))
 				return false;
 		}
 		return true;

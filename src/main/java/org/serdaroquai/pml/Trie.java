@@ -5,10 +5,15 @@ import static org.serdaroquai.pml.Common.EMPTY_NODE;
 import static org.serdaroquai.pml.Common.EMPTY_NODE_BYTES;
 import static org.serdaroquai.pml.Common.getNodeType;
 import static org.serdaroquai.pml.Common.sha256;
+import static org.serdaroquai.pml.Common.toByteString;
 import static org.serdaroquai.pml.NibbleString.from;
+import static org.serdaroquai.pml.NibbleString.isTerminal;
 import static org.serdaroquai.pml.NibbleString.pack;
 import static org.serdaroquai.pml.NibbleString.unpack;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.serdaroquai.pml.NodeProto.TrieNode;
@@ -125,28 +130,55 @@ public class Trie<K,V>{
 	}
 	
 	public Map<K,V> toMap() {
-		// We can solve this by backtracking starting from root node.
-		// However there will be a lot of NibbleString concatenation
-		throw new UnsupportedOperationException("Not yet Implemented");
+		Map<K,V> results = new HashMap<>();
+		toMapHelper(this.rootNode, new ArrayList<Byte>(), results);
+		return results;
 	}
 	
-	private void toMapHelper(TrieNode node, StringBuilder path, Map<K,V> map) {
-//		NodeType type = getNodeType(node);
-//		
-//		if (type == NodeType.BLANK) 
-//			return;
-//		
-//		int initialPathSize = path.length();
-//				
-//		if (type.isKeyValueType()) {
-//			NibbleString key = unpack(node.getItem(0));
-//			int keyLength = key.size();
-//			for (int i=0; i < keyLength; i++) path.append(key.nibbleAt(i));
-//			
-//			if (isTerminal(node.getItem(0))) {
-//				map.put(key, value)
-//			}
-//		}
+	public Map<K,V> toMap(ByteString rootHash) {
+		Map<K,V> results = new HashMap<>();
+		toMapHelper(decodeToNode(rootHash), new ArrayList<Byte>(), results);
+		return results;
+	}
+	
+	private void toMapHelper(TrieNode node, List<Byte> path, Map<K,V> map) {
+		NodeType type = getNodeType(node);
+		
+		if (type == NodeType.BLANK) 
+			return;
+		
+		int len = path.size();
+		if (type.isKeyValueType()) {
+			
+			NibbleString key = unpack(node.getItem(0));
+			for (Byte b : key) path.add(b);
+			
+			if (isTerminal(node.getItem(0))) {
+				map.put(keySerializer.deserialize(toByteString(path)), 
+						valueSerializer.deserialize(node.getItem(1)));
+				
+			} else {
+				toMapHelper(decodeToNode(node.getItem(1)), path, map);
+			}
+			
+			len = path.size() - len; // number of nibbles to remove
+			for (int i=0; i<len; i++) path.remove(path.size()-1);
+			
+		} else if (type == NodeType.BRANCH) {
+			
+			if (!ByteString.EMPTY.equals(node.getItem(16))) {
+				map.put(keySerializer.deserialize(toByteString(path)), 
+						valueSerializer.deserialize(node.getItem(16)));
+			}
+			
+			for (int i=0; i<16; i++) {
+				if (!ByteString.EMPTY.equals(node.getItem(i))) {
+					path.add((byte) i);
+					toMapHelper(decodeToNode(node.getItem(i)), path, map);
+					path.remove(path.size()-1);
+				}
+			}
+		}
 		
 	}
 	

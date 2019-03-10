@@ -4,14 +4,11 @@ import static org.serdaroquai.pml.Common.BRANCH_NODE_PROTOTYPE;
 import static org.serdaroquai.pml.Common.EMPTY_NODE;
 import static org.serdaroquai.pml.Common.EMPTY_NODE_BYTES;
 import static org.serdaroquai.pml.Common.getNodeType;
-import static org.serdaroquai.pml.Common.nibbleToIndex;
 import static org.serdaroquai.pml.Common.sha256;
 import static org.serdaroquai.pml.NibbleString.from;
 import static org.serdaroquai.pml.NibbleString.pack;
 import static org.serdaroquai.pml.NibbleString.unpack;
-import static org.serdaroquai.pml.NibbleString.isTerminal;
 
-import java.util.Deque;
 import java.util.Map;
 
 import org.serdaroquai.pml.NodeProto.TrieNode;
@@ -186,7 +183,7 @@ public class Trie<K,V>{
 			if (path.size() == 0)
 				builder.setItem(16, value);
 			else {
-				int keyIndex = nibbleToIndex(path.nibbleAt(0));
+				int keyIndex = path.nibbleAsByte(0);
 				TrieNode newNode = decodeToNode(node.getItem(keyIndex));
 				newNode = updateHelper(newNode, path.substring(1), value);
 				builder.setItem(keyIndex, encodeNode(newNode));
@@ -207,7 +204,7 @@ public class Trie<K,V>{
 		// find longest common prefix
 		int minKeyLength = Math.min(key.size(), path.size());
 		int i=0; 
-		while (i < minKeyLength && key.nibbleAt(i) == path.nibbleAt(i)) i++;
+		while (i < minKeyLength && key.nibbleAsChar(i) == path.nibbleAsChar(i)) i++;
 		int prefixLength = i;
 		
 		NibbleString remainingPath = path.substring(prefixLength);
@@ -233,9 +230,8 @@ public class Trie<K,V>{
 						.build();
 				ByteString leafEncoded = encodeNode(leaf);
 				
-				int index = nibbleToIndex(remainingPath.nibbleAt(0));
 				newNode = TrieNode.newBuilder(BRANCH_NODE_PROTOTYPE)
-						.setItem(index, leafEncoded)
+						.setItem(remainingPath.nibbleAsByte(0), leafEncoded)
 						.setItem(16, node.getItem(1))
 						.build();
 			}
@@ -244,7 +240,7 @@ public class Trie<K,V>{
 			TrieNode.Builder builder = TrieNode.newBuilder(BRANCH_NODE_PROTOTYPE);
 			
 			if (remainingKey.size() == 1 && type == NodeType.EXTENSION) {
-				builder.setItem(nibbleToIndex(remainingKey.nibbleAt(0)), node.getItem(1));
+				builder.setItem(remainingKey.nibbleAsByte(0), node.getItem(1));
 			} else {
 				ByteString packedChildKey = pack(
 						remainingKey.substring(1), 
@@ -255,7 +251,7 @@ public class Trie<K,V>{
 						.addItem(node.getItem(1))
 						.build();
 				
-				builder.setItem(nibbleToIndex(remainingKey.nibbleAt(0)), encodeNode(child));
+				builder.setItem(remainingKey.nibbleAsByte(0), encodeNode(child));
 			}
 			
 			if (remainingPath.size() == 0) {
@@ -268,7 +264,7 @@ public class Trie<K,V>{
 						.addItem(value)
 						.build();
 				
-				builder.setItem(nibbleToIndex(remainingPath.nibbleAt(0)), encodeNode(leaf));
+				builder.setItem(remainingPath.nibbleAsByte(0), encodeNode(leaf));
 			}
 			
 			newNode = builder.build();
@@ -361,7 +357,7 @@ public class Trie<K,V>{
 			if (path.size() == 0)
 				return node.getItem(16);
 			
-			ByteString subNodeBytes = node.getItem(nibbleToIndex(path.nibbleAt(0)));
+			ByteString subNodeBytes = node.getItem(path.nibbleAsByte(0));
 			return getHelper(decodeToNode(subNodeBytes), path.substring(1));
 		}
 		

@@ -88,13 +88,8 @@ public class Common {
 		return (byte) (alignLeft ? hexToNibbles[hex] << 4 : hexToNibbles[hex]);
 	}
 	
-	
 	public static char nibbleToHex(byte b, boolean leftNibble) {
 		return leftNibble ? nibblesToHex[((b & 0xF0) >> 4)] : nibblesToHex[(b & 0x0F)];
-	}
-	
-	public static int nibbleToIndex(char hexNibble) {
-		return hexToNibbles[hexNibble];
 	}
 
 	public static ByteString sha256(ByteString raw) {
@@ -126,9 +121,9 @@ public class Common {
 		NibbleString hashNibbles = NibbleString.from(hashNodeEncoded);
 		StringBuilder sb = new StringBuilder();
 		sb.append('(');
-		for (int i=4; i< 8; i++) sb.append(hashNibbles.nibbleAt(i));
+		for (int i=4; i< 8; i++) sb.append(hashNibbles.nibbleAsChar(i));
 		sb.append("..");
-		for (int i=30; i< 34; i++) sb.append(hashNibbles.nibbleAt(i));
+		for (int i=30; i< 34; i++) sb.append(hashNibbles.nibbleAsChar(i));
 		sb.append(')');
 		return sb.toString();
 	}

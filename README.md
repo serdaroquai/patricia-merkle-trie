@@ -1,5 +1,5 @@
 # patricia-merkle-trie
-[![Build Status](https://travis-ci.org/serdaroquai/patricia-merkle-trie.png?branch=master)](https://travis-ci.org/serdaroquai/patricia-merkle-trie)  
+[![Build Status](https://travis-ci.com/serdaroquai/patricia-merkle-trie.svg?branch=master)](https://travis-ci.org/serdaroquai/patricia-merkle-trie)  
 
 A java implementation of patricia-merkle-trie data structure. Uses `Protobuff` to encode TrieNodes and `sha256` to generate keys. 
 

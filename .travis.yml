@@ -1,2 +1,2 @@
 language: java
-build: mvn build
+build: mvn build clean install

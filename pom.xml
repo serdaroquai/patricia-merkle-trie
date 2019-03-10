@@ -37,18 +37,19 @@
 	</dependencies>
 	<build>
 		<plugins>
-			<!-- tag::singlejar[] -->
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.0</version>
 				<configuration>
-					<executable>true</executable>
+					<source>1.7</source>
+            		<target>1.7</target>
 				</configuration>
 			</plugin>
-			<!-- end::singlejar[] -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
+				<version>3.0.1</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>

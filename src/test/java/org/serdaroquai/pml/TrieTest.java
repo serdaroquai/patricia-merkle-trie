@@ -23,6 +23,32 @@ public class TrieTest {
 	}
 	
 	@Test
+	public void testQueryOnOldRootHash() {
+		
+		t.put("do", "verb");
+		t.put("dog", "puppy");
+		t.put("doge", "coin");
+		ByteString root = t.put("horse", "stallion");
+		
+		assertEquals("stallion", t.get("horse"));
+		assertEquals("stallion", t.get(root, "horse"));
+		
+		t.put("horse", "no-stallion");
+		ByteString rootPrime = t.put("doge", "no-coin");
+		
+		assertEquals("verb", t.get(rootPrime, "do"));
+		assertEquals("puppy", t.get(rootPrime, "dog"));
+		assertEquals("no-coin", t.get(rootPrime, "doge"));
+		assertEquals("no-stallion", t.get(rootPrime, "horse"));
+		
+		assertEquals("verb", t.get(root, "do"));
+		assertEquals("puppy", t.get(root, "dog"));
+		assertEquals("coin", t.get(root, "doge"));
+		assertEquals("stallion", t.get(root, "horse"));
+		
+	}
+	
+	@Test
 	public void testRootHashEquality() {
 		// same state = same root hash?
 		t.put("do", "verb");

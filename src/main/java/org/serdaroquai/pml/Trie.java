@@ -57,6 +57,16 @@ import com.google.protobuf.InvalidProtocolBufferException;
  * 
  * - a branch node stores only values.
  * 
+ * In oder to introduce transactions, we need to introduce a few changes: 
+ * 	1) an encode() and update() method that does not persist, whatever is encoded immediately 
+ * but rather stages it until commit. (or introduce some staging methods to store interface)
+ *  2) delegate responsibility of setting root hash to a commit method.
+ * 
+ * - a nice to have would be an update method optimized for initialization, that only keeps relevant nodes 
+ * and discards the ones that no longer serve a purpose after initialization.
+ * 
+ * - a nice to have would be a map (maybe LRU?) that is in sync with trie to serve queries in O(1) time.
+ * 
  * @author tr1b6162
  *
  */
@@ -67,7 +77,7 @@ public class Trie<K,V>{
 	private ByteString rootHash;
 	private Serializer<K> keySerializer;
 	private Serializer<V> valueSerializer;
-
+	
 	public static Trie<String, String> create() {
 		return new Trie<String, String>(EMPTY_NODE_BYTES, new MemoryStore(), Serializer.STRING_UTF8, Serializer.STRING_UTF8);
 	}
@@ -98,7 +108,13 @@ public class Trie<K,V>{
 	}
 	
 	public V get(K key) {
-		return valueSerializer.deserialize(get(keySerializer.serialize(key)));
+		return valueSerializer.deserialize(
+				getHelper(rootNode, from(keySerializer.serialize(key))));
+	}
+	
+	public V get(ByteString rootHash, K key) {
+		return valueSerializer.deserialize(
+				getHelper(decodeToNode(rootHash), from(keySerializer.serialize(key))));
 	}
 
 	public ByteString put(K key, V value) {
@@ -244,10 +260,6 @@ public class Trie<K,V>{
 		} else {
 			return newNode;
 		}
-	}
-	
-	private ByteString get(ByteString key) {
-		return getHelper(rootNode, from(key));
 	}
 	
 	/**

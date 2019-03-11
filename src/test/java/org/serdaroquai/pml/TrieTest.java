@@ -20,9 +20,38 @@ public class TrieTest {
 	
 	@Before
 	public void setup() {
+		init();
+	}
+	
+	private void init() {
 		s = new MemoryStore();
 		t = Trie.create(s);
+	}
+	
+	@Test
+	public void testUnorderedInsertionYieldsSameHash() {
+		t.put("do", "verb");
+		t.put("dog", "puppy");
+		t.put("doge", "coin");
+		ByteString root1 = t.put("horse", "stallion");
 		
+		init();
+		
+		t.put("horse", "stallion");
+		t.put("doge", "coin");
+		t.put("dog", "puppy");
+		ByteString root2 = t.put("do", "verb");
+		
+		init();
+		
+		t.put("dog", "puppy");
+		t.put("horse", "stallion");
+		t.put("do", "verb");
+		ByteString root3 = t.put("doge", "coin");
+		
+		assertEquals(root1, root2);
+		assertEquals(root2, root3);
+		assertEquals(root3, root1);
 	}
 	
 	@Test

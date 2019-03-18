@@ -104,11 +104,11 @@ public class Trie<K,V>{
 			Serializer<K> keySerializer, 
 			Serializer<V> valueSerializer) {
 		
+		this.store = store; // decodeToNode needs store to be initialized first
 		this.rootHash = rootHash;
 		this.rootNode = decodeToNode(rootHash);
 		this.keySerializer = keySerializer;
 		this.valueSerializer =valueSerializer;
-		this.store = store;
 	}
 	
 	public V get(K key) {

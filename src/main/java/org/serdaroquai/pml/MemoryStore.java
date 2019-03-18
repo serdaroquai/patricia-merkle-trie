@@ -24,4 +24,7 @@ public class MemoryStore implements Store {
 					Common.toString(e.getValue())));
 		}	
 	}
+	
+	@Override
+	public boolean commit() { return true;}
 }

@@ -9,6 +9,7 @@ import static org.junit.Assert.assertNotNull;
 import java.util.Map;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.protobuf.ByteString;
@@ -26,6 +27,22 @@ public class TrieTest {
 	private void init() {
 		s = new MemoryStore();
 		t = Trie.create(s);
+	}
+	
+	@Test
+	@Ignore // TODO returns 0
+	public void testEmptyTrieHash32Bytes() {
+		ByteString root =t.getRootHash();
+		assertEquals(32, root.size());
+	}
+	
+	@Test
+	@Ignore // TODO returns 34
+	public void testRootHash32Bytes() {
+		ByteString root = t.put("key", "value");
+		assertEquals(32, root.size());
+		assertEquals(root, t.getRootHash());
+		assertNotNull("missing hash in store", s.get(root));
 	}
 	
 	@Test

@@ -1,6 +1,7 @@
 package org.serdaroquai.pml;
 
-import com.google.protobuf.ByteString;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 /**
  *  Serialization interface to define how to convert a given T type into ByteString.
@@ -14,26 +15,26 @@ import com.google.protobuf.ByteString;
  */
 public interface Serializer<T> {
 	
-	ByteString serialize(T obj);
-	T deserialize(ByteString bytes);
+	ByteBuffer serialize(T obj);
+	T deserialize(ByteBuffer bytes);
 	
 	public static final Serializer<String> STRING_UTF8 = new Serializer<String>() {
 		@Override
-		public ByteString serialize(String obj) { return ByteString.copyFromUtf8(obj);}
+		public ByteBuffer serialize(String obj) { return ByteBuffer.wrap(obj.getBytes(StandardCharsets.UTF_8));}
 		@Override
-		public String deserialize(ByteString bytes) { return bytes.toStringUtf8();}	
+		public String deserialize(ByteBuffer bytes) { return new String(bytes.array(), StandardCharsets.UTF_8);}	
 	};
 	
 	/**
 	 * TODO, test me
 	 */
 	public static final Serializer<Boolean> BOOLEAN = new Serializer<Boolean>() {
-		private final ByteString FALSE = ByteString.copyFrom(new byte[] {(byte) 0x00});
-		private final ByteString TRUE = ByteString.copyFrom(new byte[] {(byte) 0xFF});
+		private final ByteBuffer FALSE = ByteBuffer.wrap(new byte[] {(byte) 0x00});
+		private final ByteBuffer TRUE = ByteBuffer.wrap(new byte[] {(byte) 0xFF});
 		@Override
-		public ByteString serialize(Boolean obj) { return obj ? TRUE : FALSE;}
+		public ByteBuffer serialize(Boolean obj) { return obj ? TRUE : FALSE;}
 		@Override
-		public Boolean deserialize(ByteString bytes) { return TRUE.equals(bytes) ? true : false;}	
+		public Boolean deserialize(ByteBuffer bytes) { return TRUE.equals(bytes) ? true : false;}	
 	};
 	
 	/**
@@ -41,22 +42,22 @@ public interface Serializer<T> {
 	 */
 	public static final Serializer<Long> INT64 = new Serializer<Long>() {
 		@Override
-		public ByteString serialize(Long l) { 
+		public ByteBuffer serialize(Long l) { 
 			if (l == null) throw new AssertionError("Does not allow null values");
 			byte[] result = new byte[Long.BYTES];
 		    for (int i = 7; i >= 0; i--) {
 		        result[i] = (byte)(l & 0xFF);
 		        l >>= 8;
 		    }
-		    return ByteString.copyFrom(result);
+		    return ByteBuffer.wrap(result);
 		}
 		@Override
-		public Long deserialize(ByteString bytes) {
-			if (ByteString.EMPTY.equals(bytes)) throw new AssertionError("Does not allow null values");
+		public Long deserialize(ByteBuffer bytes) {
+			if (Common.EMPTY.equals(bytes)) throw new AssertionError("Does not allow null values");
 			long result = 0;
 		    for (int i = 0; i < 8; i++) {
 		        result <<= 8;
-		        result |= (bytes.byteAt(i) & 0xFF);
+		        result |= (bytes.get(i) & 0xFF);
 		    }
 		    return result;
 		}	

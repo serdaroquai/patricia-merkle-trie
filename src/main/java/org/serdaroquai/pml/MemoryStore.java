@@ -1,24 +1,23 @@
 package org.serdaroquai.pml;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.google.protobuf.ByteString;
-
 public class MemoryStore implements Store {
 
-	private Map<ByteString, ByteString> map = new HashMap<>();
+	private Map<ByteBuffer, ByteBuffer> map = new HashMap<>();
 	
 	@Override
-	public ByteString get(ByteString hash) { return map.get(hash); }
+	public ByteBuffer get(ByteBuffer hash) { return map.get(hash); }
 
 	@Override
-	public void put(ByteString hash, ByteString encoded) { map.put(hash, encoded); }
+	public void put(ByteBuffer hash, ByteBuffer encoded) { map.put(hash, encoded); }
 
 	@Override
 	public void dumpAll() {
-		for (Entry<ByteString, ByteString> e : map.entrySet()) {
+		for (Entry<ByteBuffer, ByteBuffer> e : map.entrySet()) {
 			System.out.println(String.format("%s: %s", 
 					Common.hashToShortString(e.getKey()),
 					Common.toString(e.getValue())));

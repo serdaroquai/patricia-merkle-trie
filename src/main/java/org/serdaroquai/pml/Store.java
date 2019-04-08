@@ -1,11 +1,11 @@
 package org.serdaroquai.pml;
 
-import com.google.protobuf.ByteString;
+import java.nio.ByteBuffer;
 
 public interface Store {
 
-	ByteString get(ByteString hash);
-	void put(ByteString hash, ByteString encoded);
+	ByteBuffer get(ByteBuffer hash);
+	void put(ByteBuffer hash, ByteBuffer encoded);
 	void dumpAll();
 	boolean commit();
 }

@@ -1,9 +1,8 @@
 package org.serdaroquai.pml;
 
 
+import java.nio.ByteBuffer;
 import java.util.Iterator;
-
-import com.google.protobuf.ByteString;
 
 /**
  * Immutable class representing an arbitrary length of nibbles.
@@ -95,22 +94,22 @@ public class NibbleString implements Iterable<Byte>{
 	}
 	
 	/**
-	 * Converts given ByteString to NibbleString by copying the underlying byte[] 
+	 * Converts given ByteBuffer to NibbleString by copying the underlying byte[] 
 	 * 
 	 * Resulting NibbleString is always even length and is not packed.
 	 * 
 	 * @param bytes
 	 * @return
 	 */
-	public static NibbleString from(ByteString bytes) {
+	public static NibbleString from(ByteBuffer bytes) {
 		NibbleString instance = new NibbleString();
-		int len = bytes.size() == 0 ? 0 : bytes.size() << 1;
+		int len = bytes.limit() == 0 ? 0 : bytes.limit() << 1;
 		instance.nibbles = new byte[len];
 		
 		int w = 0;
-		for (byte b : bytes) {
-			instance.nibbles[w++] = (byte) ((b & 0xf0) >> 4);
-			instance.nibbles[w++] = (byte) ((b & 0x0f));
+		for (int r=0; r<len; r++) {
+			instance.nibbles[w++] = (byte) ((bytes.get(r) & 0xf0) >> 4);
+			instance.nibbles[w++] = (byte) ((bytes.get(r) & 0x0f));
 		}
 		
 		instance.offset = 0;
@@ -121,7 +120,7 @@ public class NibbleString implements Iterable<Byte>{
 	}
 
 	/**
-	 * Unpacks a packed ByteString into a NibbleString. 
+	 * Unpacks a packed ByteBuffer into a NibbleString. 
 	 * 
 	 * First nibble of a packed ByeString always contains leading flags representing 
 	 *  1) nibble is odd/even length. (Since a byte can store 2 nibbles)
@@ -130,23 +129,23 @@ public class NibbleString implements Iterable<Byte>{
 	 * @param bytes
 	 * @return
 	 */
-	public static NibbleString unpack(ByteString bytes) {
-		if (bytes.size() == 0) throw new IllegalArgumentException("Can not be empty");
+	public static NibbleString unpack(ByteBuffer bytes) {
+		if (bytes.limit() == 0) throw new IllegalArgumentException("Can not be empty");
 		
-		int len = bytes.size();
+		int len = bytes.limit();
 		NibbleString instance = new NibbleString();
 		
 		int w = 0, r = 1;
-		if ((bytes.byteAt(0) & ODD_START) == ODD_START) {
+		if ((bytes.get(0) & ODD_START) == ODD_START) {
 			instance.nibbles = new byte[(len << 1) - 1];
-			instance.nibbles[w++] = (byte) (bytes.byteAt(0) & 0x0f);
+			instance.nibbles[w++] = (byte) (bytes.get(0) & 0x0f);
 		} else {
 			instance.nibbles = new byte[(len << 1) - 2];
 		}
 		
 		while (r<len) {
-			instance.nibbles[w++] = (byte) ((bytes.byteAt(r) & 0xf0) >> 4);
-			instance.nibbles[w++] = (byte) (bytes.byteAt(r++) & 0x0f);
+			instance.nibbles[w++] = (byte) ((bytes.get(r) & 0xf0) >> 4);
+			instance.nibbles[w++] = (byte) (bytes.get(r++) & 0x0f);
 		}
 		
 		instance.offset = 0;
@@ -156,7 +155,7 @@ public class NibbleString implements Iterable<Byte>{
 	}
 	
 	/**
-	 * Packs a NibbleString into a packed ByteString.
+	 * Packs a NibbleString into a packed ByteBuffer.
 	 * 
 	 * First nibble of a packed ByeString always contains leading flags representing 
 	 *  1) nibble is odd/even length. (Since a byte can store 2 nibbles)
@@ -166,7 +165,7 @@ public class NibbleString implements Iterable<Byte>{
 	 * @param isTerminal
 	 * @return
 	 */
-	public static ByteString pack(NibbleString n, boolean isTerminal) {
+	public static ByteBuffer pack(NibbleString n, boolean isTerminal) {
 		int len = n.size();
 		
 		byte[] result = new byte[(len >> 1) + 1];
@@ -183,11 +182,11 @@ public class NibbleString implements Iterable<Byte>{
 			result[write++] = (byte) ((n.nibbleAsByte(read++) << 4) | n.nibbleAsByte(read++));
 		}
 		
-		return ByteString.copyFrom(result);
+		return ByteBuffer.wrap(result);
 	}
 	
-	public static boolean isTerminal(ByteString packed) {
-		return (packed.byteAt(0) & TERMINAL) == TERMINAL;
+	public static boolean isTerminal(ByteBuffer packed) {
+		return (packed.get(0) & TERMINAL) == TERMINAL;
 	}
 	
 	@Override

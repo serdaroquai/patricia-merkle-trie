@@ -5,12 +5,13 @@ import static org.serdaroquai.pml.Common.EMPTY_NODE;
 import static org.serdaroquai.pml.Common.EMPTY_NODE_BYTES;
 import static org.serdaroquai.pml.Common.getNodeType;
 import static org.serdaroquai.pml.Common.sha256;
-import static org.serdaroquai.pml.Common.toByteString;
+import static org.serdaroquai.pml.Common.toByteBuffer;
 import static org.serdaroquai.pml.NibbleString.from;
 import static org.serdaroquai.pml.NibbleString.isTerminal;
 import static org.serdaroquai.pml.NibbleString.pack;
 import static org.serdaroquai.pml.NibbleString.unpack;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -78,7 +79,7 @@ public class Trie<K,V>{
 	
 	private Store store;
 	private TrieNode rootNode;
-	private ByteString rootHash;
+	private ByteBuffer rootHash;
 	private Serializer<K> keySerializer;
 	private Serializer<V> valueSerializer;
 	
@@ -90,16 +91,16 @@ public class Trie<K,V>{
 		return new Trie<String, String>(EMPTY_NODE_BYTES, store, Serializer.STRING_UTF8, Serializer.STRING_UTF8);
 	}
 	
-	public static Trie<String, String> create(ByteString rootHash, Store store) {
+	public static Trie<String, String> create(ByteBuffer rootHash, Store store) {
 		return new Trie<String, String>(rootHash, store, Serializer.STRING_UTF8, Serializer.STRING_UTF8);
 	}
 	
-	public static <K,V> Trie<K, V> create(ByteString rootHash, Store store, Serializer<K> key, Serializer<V> value) {
+	public static <K,V> Trie<K, V> create(ByteBuffer rootHash, Store store, Serializer<K> key, Serializer<V> value) {
 		return new Trie<K, V>(EMPTY_NODE_BYTES, store, key, value);
 	}
 	
 	private Trie(
-			ByteString rootHash, 
+			ByteBuffer rootHash, 
 			Store store, 
 			Serializer<K> keySerializer, 
 			Serializer<V> valueSerializer) {
@@ -116,16 +117,16 @@ public class Trie<K,V>{
 				getHelper(rootNode, from(keySerializer.serialize(key))));
 	}
 	
-	public V get(ByteString rootHash, K key) {
+	public V get(ByteBuffer rootHash, K key) {
 		return valueSerializer.deserialize(
 				getHelper(decodeToNode(rootHash), from(keySerializer.serialize(key))));
 	}
 
-	public ByteString put(K key, V value) {
+	public ByteBuffer put(K key, V value) {
 		return update(keySerializer.serialize(key), valueSerializer.serialize(value));
 	}
 
-	public ByteString getRootHash() {
+	public ByteBuffer getRootHash() {
 		return this.rootHash;
 	}
 	
@@ -135,7 +136,7 @@ public class Trie<K,V>{
 		return results;
 	}
 	
-	public Map<K,V> toMap(ByteString rootHash) {
+	public Map<K,V> toMap(ByteBuffer rootHash) {
 		Map<K,V> results = new HashMap<>();
 		toMapHelper(decodeToNode(rootHash), new ArrayList<Byte>(), results);
 		return results;
@@ -150,15 +151,15 @@ public class Trie<K,V>{
 		int len = path.size();
 		if (type.isKeyValueType()) {
 			
-			NibbleString key = unpack(node.getItem(0));
+			NibbleString key = unpack(node.getItem(0).asReadOnlyByteBuffer());
 			for (Byte b : key) path.add(b);
 			
-			if (isTerminal(node.getItem(0))) {
-				map.put(keySerializer.deserialize(toByteString(path)), 
-						valueSerializer.deserialize(node.getItem(1)));
+			if (isTerminal(node.getItem(0).asReadOnlyByteBuffer())) {
+				map.put(keySerializer.deserialize(toByteBuffer(path)), 
+						valueSerializer.deserialize(node.getItem(1).asReadOnlyByteBuffer()));
 				
 			} else {
-				toMapHelper(decodeToNode(node.getItem(1)), path, map);
+				toMapHelper(decodeToNode(node.getItem(1).asReadOnlyByteBuffer()), path, map);
 			}
 			
 			len = path.size() - len; // number of nibbles to remove
@@ -166,15 +167,15 @@ public class Trie<K,V>{
 			
 		} else if (type == NodeType.BRANCH) {
 			
-			if (!ByteString.EMPTY.equals(node.getItem(16))) {
-				map.put(keySerializer.deserialize(toByteString(path)), 
-						valueSerializer.deserialize(node.getItem(16)));
+			if (!Common.EMPTY.equals(node.getItem(16).asReadOnlyByteBuffer())) {
+				map.put(keySerializer.deserialize(toByteBuffer(path)), 
+						valueSerializer.deserialize(node.getItem(16).asReadOnlyByteBuffer()));
 			}
 			
 			for (int i=0; i<16; i++) {
-				if (!ByteString.EMPTY.equals(node.getItem(i))) {
+				if (!Common.EMPTY.equals(node.getItem(i).asReadOnlyByteBuffer())) {
 					path.add((byte) i);
-					toMapHelper(decodeToNode(node.getItem(i)), path, map);
+					toMapHelper(decodeToNode(node.getItem(i).asReadOnlyByteBuffer()), path, map);
 					path.remove(path.size()-1);
 				}
 			}
@@ -182,7 +183,7 @@ public class Trie<K,V>{
 		
 	}
 	
-	private ByteString update(ByteString key, ByteString value) {
+	private ByteBuffer update(ByteBuffer key, ByteBuffer value) {
 		this.rootNode = updateHelper(rootNode, from(key), value);
 		this.rootHash = encodeNode(rootNode);
 		return this.rootHash;
@@ -199,13 +200,13 @@ public class Trie<K,V>{
 	 * 
 	 * @return the new version of self node
 	 */
-	private TrieNode updateHelper(TrieNode node, NibbleString path, ByteString value) {
+	private TrieNode updateHelper(TrieNode node, NibbleString path, ByteBuffer value) {
 		NodeType type = getNodeType(node);
 		
 		if (type == NodeType.BLANK) {
 			return TrieNode.newBuilder()
-					.addItem(pack(path, true))
-					.addItem(value)
+					.addItem(ByteString.copyFrom(pack(path, true)))
+					.addItem(ByteString.copyFrom(value))
 					.build();
 		
 		} else if (type == NodeType.BRANCH) {
@@ -213,12 +214,12 @@ public class Trie<K,V>{
 			TrieNode.Builder builder = TrieNode.newBuilder(node); 
 			
 			if (path.size() == 0)
-				builder.setItem(16, value);
+				builder.setItem(16, ByteString.copyFrom(value));
 			else {
 				int keyIndex = path.nibbleAsByte(0);
-				TrieNode newNode = decodeToNode(node.getItem(keyIndex));
+				TrieNode newNode = decodeToNode(node.getItem(keyIndex).asReadOnlyByteBuffer());
 				newNode = updateHelper(newNode, path.substring(1), value);
-				builder.setItem(keyIndex, encodeNode(newNode));
+				builder.setItem(keyIndex, ByteString.copyFrom(encodeNode(newNode)));
 			}
 			return builder.build();
 			
@@ -229,9 +230,9 @@ public class Trie<K,V>{
 		throw new AssertionError("Not possible");
 	}
 	
-	private TrieNode updateKeyValueHelper(TrieNode node, NibbleString path, ByteString value) {
+	private TrieNode updateKeyValueHelper(TrieNode node, NibbleString path, ByteBuffer value) {
 		NodeType type = getNodeType(node);
-		NibbleString key = unpack(node.getItem(0));
+		NibbleString key = unpack(node.getItem(0).asReadOnlyByteBuffer());
 		
 		// find longest common prefix
 		int minKeyLength = Math.min(key.size(), path.size());
@@ -245,25 +246,25 @@ public class Trie<K,V>{
 		TrieNode newNode;
 		if (remainingPath.size() == 0 && remainingKey.size() == 0) {
 			if (type == NodeType.LEAF) {
-				return TrieNode.newBuilder(node).setItem(1, value).build();
+				return TrieNode.newBuilder(node).setItem(1, ByteString.copyFrom(value)).build();
 			} else {
-				newNode = updateHelper(decodeToNode(node.getItem(1)), remainingPath, value);
+				newNode = updateHelper(decodeToNode(node.getItem(1).asReadOnlyByteBuffer()), remainingPath, value);
 			}
 		
 		
 		} else if (remainingKey.size() == 0) {
 			if (type == NodeType.EXTENSION) {
-				newNode = updateHelper(decodeToNode(node.getItem(1)), remainingPath, value);
+				newNode = updateHelper(decodeToNode(node.getItem(1).asReadOnlyByteBuffer()), remainingPath, value);
 			} else {
 				
 				TrieNode leaf = TrieNode.newBuilder()
-						.addItem(pack(remainingPath.substring(1), true))
-						.addItem(value)
+						.addItem(ByteString.copyFrom(pack(remainingPath.substring(1), true)))
+						.addItem(ByteString.copyFrom(value))
 						.build();
-				ByteString leafEncoded = encodeNode(leaf);
+				ByteBuffer leafEncoded = encodeNode(leaf);
 				
 				newNode = TrieNode.newBuilder(BRANCH_NODE_PROTOTYPE)
-						.setItem(remainingPath.nibbleAsByte(0), leafEncoded)
+						.setItem(remainingPath.nibbleAsByte(0), ByteString.copyFrom(leafEncoded))
 						.setItem(16, node.getItem(1))
 						.build();
 			}
@@ -274,29 +275,29 @@ public class Trie<K,V>{
 			if (remainingKey.size() == 1 && type == NodeType.EXTENSION) {
 				builder.setItem(remainingKey.nibbleAsByte(0), node.getItem(1));
 			} else {
-				ByteString packedChildKey = pack(
+				ByteBuffer packedChildKey = pack(
 						remainingKey.substring(1), 
 						type == NodeType.LEAF);
 				
 				TrieNode child = TrieNode.newBuilder()
-						.addItem(packedChildKey)
+						.addItem(ByteString.copyFrom(packedChildKey))
 						.addItem(node.getItem(1))
 						.build();
 				
-				builder.setItem(remainingKey.nibbleAsByte(0), encodeNode(child));
+				builder.setItem(remainingKey.nibbleAsByte(0), ByteString.copyFrom(encodeNode(child)));
 			}
 			
 			if (remainingPath.size() == 0) {
-				builder.setItem(16, value);
+				builder.setItem(16, ByteString.copyFrom(value));
 			} else {
-				ByteString packedRemainingPath = pack(remainingPath.substring(1), true);
+				ByteBuffer packedRemainingPath = pack(remainingPath.substring(1), true);
 				
 				TrieNode leaf = TrieNode.newBuilder()
-						.addItem(packedRemainingPath)
-						.addItem(value)
+						.addItem(ByteString.copyFrom(packedRemainingPath))
+						.addItem(ByteString.copyFrom(value))
 						.build();
 				
-				builder.setItem(remainingPath.nibbleAsByte(0), encodeNode(leaf));
+				builder.setItem(remainingPath.nibbleAsByte(0), ByteString.copyFrom(encodeNode(leaf)));
 			}
 			
 			newNode = builder.build();
@@ -304,8 +305,8 @@ public class Trie<K,V>{
 		
 		if (prefixLength > 0) {
 			return TrieNode.newBuilder()
-					.addItem(pack(key.substring(0, prefixLength), false))
-					.addItem(encodeNode(newNode))
+					.addItem(ByteString.copyFrom(pack(key.substring(0, prefixLength), false)))
+					.addItem(ByteString.copyFrom(encodeNode(newNode)))
 					.build();
 		} else {
 			return newNode;
@@ -325,14 +326,18 @@ public class Trie<K,V>{
 	 * @param node
 	 * @return
 	 */
-	private ByteString encodeNode(TrieNode node) {
+	private ByteBuffer encodeNode(TrieNode node) {
 		
 		if (EMPTY_NODE.equals(node)) return EMPTY_NODE_BYTES;
-		ByteString encoded = node.toByteString();
-		if (encoded.size() < 34 && node != this.rootNode) return encoded;
+		ByteBuffer encoded = ByteBuffer.wrap(node.toByteArray());
+		if (encoded.limit() < 34 && node != this.rootNode) return encoded;
 		else {
-			ByteString hash = sha256(encoded);
-			ByteString hashNode = TrieNode.newBuilder().addItem(hash).build().toByteString();
+			ByteBuffer hash = sha256(encoded);
+			ByteBuffer hashNode = ByteBuffer.wrap(
+					TrieNode.newBuilder()
+						.addItem(ByteString.copyFrom(hash))
+						.build()
+						.toByteArray());
 			store.put(hash, encoded);
 			return hashNode;
 		}
@@ -357,14 +362,14 @@ public class Trie<K,V>{
 	 * @param bytes
 	 * @return
 	 */
-	private TrieNode decodeToNode(ByteString bytes) {
+	private TrieNode decodeToNode(ByteBuffer bytes) {
 		
 		if (EMPTY_NODE_BYTES.equals(bytes)) return EMPTY_NODE;
 		
 		try {
 			TrieNode node = TrieNode.parseFrom(bytes);
 			if (NodeType.HASH == getNodeType(node)) 
-				return TrieNode.parseFrom(store.get(node.getItem(0)));
+				return TrieNode.parseFrom(store.get(node.getItem(0).asReadOnlyByteBuffer()));
 			else
 				return node;
 			
@@ -382,7 +387,7 @@ public class Trie<K,V>{
 	 * 
 	 * @return value
 	 */
-	private ByteString getHelper(TrieNode node, NibbleString path) {
+	private ByteBuffer getHelper(TrieNode node, NibbleString path) {
 		NodeType type = getNodeType(node);
 		
 		if (type == NodeType.BLANK)
@@ -390,20 +395,20 @@ public class Trie<K,V>{
 		
 		if (type == NodeType.BRANCH) {
 			if (path.size() == 0)
-				return node.getItem(16);
+				return node.getItem(16).asReadOnlyByteBuffer();
 			
-			ByteString subNodeBytes = node.getItem(path.nibbleAsByte(0));
+			ByteBuffer subNodeBytes = node.getItem(path.nibbleAsByte(0)).asReadOnlyByteBuffer();
 			return getHelper(decodeToNode(subNodeBytes), path.substring(1));
 		}
 		
-		NibbleString key = unpack(node.getItem(0));
+		NibbleString key = unpack(node.getItem(0).asReadOnlyByteBuffer());
 		if (type == NodeType.LEAF) {
-			return path.equals(key) ? node.getItem(1) : EMPTY_NODE_BYTES;
+			return path.equals(key) ? node.getItem(1).asReadOnlyByteBuffer() : EMPTY_NODE_BYTES;
 		}
 		
 		if (type == NodeType.EXTENSION) {
 			if (key.equals(path.substring(0, key.size())))
-				return getHelper(decodeToNode(node.getItem(1)), path.substring(key.size()));
+				return getHelper(decodeToNode(node.getItem(1).asReadOnlyByteBuffer()), path.substring(key.size()));
 			else
 				return EMPTY_NODE_BYTES;
 		}

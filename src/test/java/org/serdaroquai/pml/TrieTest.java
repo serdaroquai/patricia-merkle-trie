@@ -6,13 +6,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import com.google.protobuf.ByteString;
 
 public class TrieTest {
 	
@@ -32,15 +31,15 @@ public class TrieTest {
 	@Test
 	@Ignore // TODO returns 0
 	public void testEmptyTrieHash32Bytes() {
-		ByteString root =t.getRootHash();
-		assertEquals(32, root.size());
+		ByteBuffer root =t.getRootHash();
+		assertEquals(32, root.limit());
 	}
 	
 	@Test
 	@Ignore // TODO returns 34
 	public void testRootHash32Bytes() {
-		ByteString root = t.put("key", "value");
-		assertEquals(32, root.size());
+		ByteBuffer root = t.put("key", "value");
+		assertEquals(32, root.limit());
 		assertEquals(root, t.getRootHash());
 		assertNotNull("missing hash in store", s.get(root));
 	}
@@ -50,21 +49,21 @@ public class TrieTest {
 		t.put("do", "verb");
 		t.put("dog", "puppy");
 		t.put("doge", "coin");
-		ByteString root1 = t.put("horse", "stallion");
+		ByteBuffer root1 = t.put("horse", "stallion");
 		
 		init();
 		
 		t.put("horse", "stallion");
 		t.put("doge", "coin");
 		t.put("dog", "puppy");
-		ByteString root2 = t.put("do", "verb");
+		ByteBuffer root2 = t.put("do", "verb");
 		
 		init();
 		
 		t.put("dog", "puppy");
 		t.put("horse", "stallion");
 		t.put("do", "verb");
-		ByteString root3 = t.put("doge", "coin");
+		ByteBuffer root3 = t.put("doge", "coin");
 		
 		assertEquals(root1, root2);
 		assertEquals(root2, root3);
@@ -77,7 +76,7 @@ public class TrieTest {
 		t.put("do", "verb");
 		t.put("dog", "puppy");
 		t.put("doge", "coin");
-		ByteString oldRootHash = t.put("horse", "stallion");
+		ByteBuffer oldRootHash = t.put("horse", "stallion");
 		
 		t.put("do", "no-verb");
 		t.put("dog", "no-puppy");
@@ -138,13 +137,13 @@ public class TrieTest {
 		t.put("do", "verb");
 		t.put("dog", "puppy");
 		t.put("doge", "coin");
-		ByteString root = t.put("horse", "stallion");
+		ByteBuffer root = t.put("horse", "stallion");
 		
 		assertEquals("stallion", t.get("horse"));
 		assertEquals("stallion", t.get(root, "horse"));
 		
 		t.put("horse", "no-stallion");
-		ByteString rootPrime = t.put("doge", "no-coin");
+		ByteBuffer rootPrime = t.put("doge", "no-coin");
 		
 		assertEquals("verb", t.get(rootPrime, "do"));
 		assertEquals("puppy", t.get(rootPrime, "dog"));
@@ -164,17 +163,17 @@ public class TrieTest {
 		t.put("do", "verb");
 		t.put("dog", "puppy");
 		t.put("doge", "coin");
-		ByteString expected = t.put("horse", "stallion"); // expected roothash
+		ByteBuffer expected = t.put("horse", "stallion"); // expected roothash
 		
 		t.put("do", "no-verb");
-		ByteString expected2 = t.put("dog", "no-puppy");
+		ByteBuffer expected2 = t.put("dog", "no-puppy");
 		t.put("doge", "no-coin");
-		ByteString diffHash = t.put("horse", "no-stallion");
+		ByteBuffer diffHash = t.put("horse", "no-stallion");
 		
 		t.put("doge", "coin");
-		ByteString actual2 = t.put("horse", "stallion");
+		ByteBuffer actual2 = t.put("horse", "stallion");
 		t.put("do", "verb");
-		ByteString actual = t.put("dog", "puppy");
+		ByteBuffer actual = t.put("dog", "puppy");
 		
 		assertNotEquals(expected, diffHash);
 		assertEquals(expected, actual);
@@ -229,8 +228,8 @@ public class TrieTest {
 						
 						
 		t.put("key", "value");
-		ByteString rootHash = t.put("keylong", "newValue");
-		ByteString newRootHash = t.put("key", "someValue that is really long that does not fit");
+		ByteBuffer rootHash = t.put("keylong", "newValue");
+		ByteBuffer newRootHash = t.put("key", "someValue that is really long that does not fit");
 		
 		assertNotNull(newRootHash);
 		assertNotEquals(rootHash, newRootHash);
@@ -251,8 +250,8 @@ public class TrieTest {
 //		(6cb2..2962): [,,,,,,[3e67,newValue],[3265,someValue],,,,,,,,,]
 		
 		t.put("key", "value");
-		ByteString rootHash = t.put("keylong", "newValue");
-		ByteString newRootHash = t.put("keylore", "someValue");
+		ByteBuffer rootHash = t.put("keylong", "newValue");
+		ByteBuffer newRootHash = t.put("keylore", "someValue");
 		
 		assertNotNull(newRootHash);
 		assertNotEquals(rootHash, newRootHash);
@@ -273,8 +272,8 @@ public class TrieTest {
 //		(c4ea..13cc): [,,,,,,,,,,,,[206f6e67,newValue],[206f7265,someValue],,,]
 		
 		t.put("key", "value");
-		ByteString rootHash = t.put("keylong", "newValue");
-		ByteString newRootHash = t.put("keymore", "someValue");
+		ByteBuffer rootHash = t.put("keylong", "newValue");
+		ByteBuffer newRootHash = t.put("keymore", "someValue");
 		
 		assertNotNull(newRootHash);
 		assertNotEquals(rootHash, newRootHash);
@@ -295,8 +294,8 @@ public class TrieTest {
 //		(2b41..e6be): [,,,,,,[3c6f6e67,newValue],,,,,,,,,,value]
 		
 		t.put("key", "value");
-		ByteString rootHash = t.put("keylong", "newValue");
-		ByteString newRootHash = t.put("keu", "someValue"); // key <6b 65 79> keu <6b 65 75>
+		ByteBuffer rootHash = t.put("keylong", "newValue");
+		ByteBuffer newRootHash = t.put("keu", "someValue"); // key <6b 65 79> keu <6b 65 75>
 		
 		assertNotNull(newRootHash);
 		assertNotEquals(rootHash, newRootHash);
@@ -316,8 +315,8 @@ public class TrieTest {
 //		(a24f..41bd): [,,,,,,[3c6f6e67,newValue],,,,,,,,,,someValue]
 		
 		t.put("key", "value");
-		ByteString rootHash = t.put("keylong", "newValue");
-		ByteString newRootHash = t.put("key", "someValue");
+		ByteBuffer rootHash = t.put("keylong", "newValue");
+		ByteBuffer newRootHash = t.put("key", "someValue");
 		
 		assertNotNull(newRootHash);
 		assertNotEquals(rootHash, newRootHash);
@@ -338,8 +337,8 @@ public class TrieTest {
 //		(2b41..e6be): [,,,,,,[3c6f6e67,newValue],,,,,,,,,,value]
 		
 		t.put("key", "value");
-		ByteString rootHash = t.put("keylong", "newValue");
-		ByteString newRootHash = t.put("k", "someValue");
+		ByteBuffer rootHash = t.put("keylong", "newValue");
+		ByteBuffer newRootHash = t.put("k", "someValue");
 		
 		assertNotNull(newRootHash);
 		assertNotEquals(rootHash, newRootHash);
@@ -357,10 +356,10 @@ public class TrieTest {
 //		(bce6..0419): [006b6579,(2b41..e6be)]
 //		(2b41..e6be): [,,,,,,[3c6f6e67,newValue],,,,,,,,,,value]
 
-		ByteString rootHash = t.put("key", "value");
+		ByteBuffer rootHash = t.put("key", "value");
 		assertEquals("value", t.get("key"));
 		
-		ByteString newRootHash = t.put("keylong", "newValue");
+		ByteBuffer newRootHash = t.put("keylong", "newValue");
 		assertNotNull(newRootHash);
 		assertNotEquals(rootHash, newRootHash);
 		
@@ -377,10 +376,10 @@ public class TrieTest {
 //		(00d0..6d1b): [,,,,,,[3579,value],,,,,,,,,,newValue]
 
 
-		ByteString rootHash = t.put("key", "value");
+		ByteBuffer rootHash = t.put("key", "value");
 		assertEquals("value", t.get("key"));
 		
-		ByteString newRootHash = t.put("k", "newValue");
+		ByteBuffer newRootHash = t.put("k", "newValue");
 		assertNotNull(newRootHash);
 		assertNotEquals(rootHash, newRootHash);
 		
@@ -395,10 +394,10 @@ public class TrieTest {
 //		---
 //		(8403..2b86): [206b6579,newValue]
 		
-		ByteString rootHash = t.put("key", "value");
+		ByteBuffer rootHash = t.put("key", "value");
 		assertEquals("value", t.get("key"));
 		
-		ByteString newRootHash = t.put("key", "newValue");
+		ByteBuffer newRootHash = t.put("key", "newValue");
 		
 		assertNotNull(newRootHash);
 		assertNotEquals(rootHash, newRootHash);
@@ -413,8 +412,8 @@ public class TrieTest {
 //		----
 //		(99ff..d771): [206b6579,value]
 		
-		ByteString rootHash = t.getRootHash();
-		ByteString newRootHash = t.put("key", "value");
+		ByteBuffer rootHash = t.getRootHash();
+		ByteBuffer newRootHash = t.put("key", "value");
 		
 		assertNotNull(newRootHash);
 		assertNotEquals(rootHash, newRootHash);

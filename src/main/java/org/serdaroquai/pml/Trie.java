@@ -335,7 +335,8 @@ public class Trie<K,V>{
 			ByteBuffer hash = sha256(encoded);
 			ByteBuffer hashNode = ByteBuffer.wrap(
 					TrieNode.newBuilder()
-						.addItem(ByteString.copyFrom(hash))
+						// careful copyFrom changes buffer position hence the use of .array()
+						.addItem(ByteString.copyFrom(hash.array())) 
 						.build()
 						.toByteArray());
 			store.put(hash, encoded);

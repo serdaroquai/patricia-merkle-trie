@@ -10,7 +10,10 @@ public class MemoryStore implements Store {
 	private Map<ByteBuffer, ByteBuffer> map = new HashMap<>();
 	
 	@Override
-	public ByteBuffer get(ByteBuffer hash) { return map.get(hash); }
+	public ByteBuffer get(ByteBuffer hash) { 
+		ByteBuffer byteBuffer = map.get(hash);
+		return byteBuffer;
+	}
 
 	@Override
 	public void put(ByteBuffer hash, ByteBuffer encoded) { map.put(hash, encoded); }

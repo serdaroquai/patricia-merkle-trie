@@ -118,4 +118,18 @@ public class NibbleStringTest {
 		final NibbleString n = NibbleString.unpack(ByteBuffer.wrap(EVEN_LENGTH_BYTES));
 		n.nibbleAsChar(2);
 	}
+	
+	@Test
+	public void testByteBufferEquality() {
+		ByteBuffer b1 = ByteBuffer.wrap(new byte[] {0,1,2});
+		ByteBuffer b2 = ByteBuffer.wrap(new byte[] {3,4,5});
+		ByteBuffer b3 = ByteBuffer.wrap(new byte[] {0,1,2});
+		assertNotEquals(b1, b2);
+		assertEquals(b1, b3);
+		
+		b1 = ByteBuffer.wrap("test".getBytes(StandardCharsets.UTF_8));
+		b2 = ByteString.copyFromUtf8("test").asReadOnlyByteBuffer();
+		
+		assertEquals(b1, b2);
+	}
 }

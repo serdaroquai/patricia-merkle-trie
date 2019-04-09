@@ -103,8 +103,8 @@ public class NibbleString implements Iterable<Byte>{
 	 */
 	public static NibbleString from(ByteBuffer bytes) {
 		NibbleString instance = new NibbleString();
-		int len = bytes.limit() == 0 ? 0 : bytes.limit() << 1;
-		instance.nibbles = new byte[len];
+		int len = bytes.limit();
+		instance.nibbles = new byte[len << 1];
 		
 		int w = 0;
 		for (int r=0; r<len; r++) {

@@ -1,6 +1,7 @@
 package org.serdaroquai.pml;
 
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -22,7 +23,15 @@ public interface Serializer<T> {
 		@Override
 		public ByteBuffer serialize(String obj) { return ByteBuffer.wrap(obj.getBytes(StandardCharsets.UTF_8));}
 		@Override
-		public String deserialize(ByteBuffer bytes) { return new String(bytes.array(), StandardCharsets.UTF_8);}	
+		public String deserialize(ByteBuffer bytes) {
+			if (bytes.hasArray()) {
+				return new String(bytes.array(), StandardCharsets.UTF_8);
+			} else {
+				// take the long way since bytebuffer is read only
+				CharBuffer cb = StandardCharsets.UTF_8.decode(bytes);
+				return cb.toString();
+			}
+		}	
 	};
 	
 	/**

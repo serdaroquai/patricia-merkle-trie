@@ -320,10 +320,10 @@ public class Trie<K,V>{
 	/**
 	 * Encodes a given node into a ByteString using Protocol Buffers. 
 	 * returns the resulting ByteString if length <= 34, else stores it and returns 
-	 * its hash.
+	 * its hash encoded in a hash node.
 	 * 
 	 * Only exception to this rule is, if the node to be encoded is the root node, 
-	 * in which case, a hash is generated regardless of length.
+	 * in which case, a raw hash is generated regardless of length.
 	 * 
 	 * Returned ByteString length is always <= 34.
 	 * 

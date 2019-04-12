@@ -10,7 +10,6 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TrieTest {
@@ -35,10 +34,14 @@ public class TrieTest {
 	}
 	
 	@Test
-//	@Ignore // TODO returns 34
 	public void testRootHash32Bytes() {
-		ByteBuffer root = t.put("key", "value");
+		// empty trie should also be 32 bytes
+		ByteBuffer root = t.getRootHash();
 		assertEquals(32, root.limit());
+		
+		root = t.put("key", "value");
+		assertEquals(32, root.limit());
+		
 		assertEquals(root, t.getRootHash());
 		assertNotNull("missing hash in store", s.get(root));
 	}

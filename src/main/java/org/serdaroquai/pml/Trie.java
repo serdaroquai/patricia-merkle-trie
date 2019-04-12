@@ -107,7 +107,7 @@ public class Trie<K,V>{
 		
 		this.store = store; // decodeToNode needs store to be initialized first
 		this.rootHash = rootHash;
-		this.rootNode = decodeToNode(rootHash);
+		this.rootNode = decodeToNode(rootHash, true);
 		this.keySerializer = keySerializer;
 		this.valueSerializer =valueSerializer;
 	}
@@ -119,7 +119,7 @@ public class Trie<K,V>{
 	
 	public V get(ByteBuffer rootHash, K key) {
 		return valueSerializer.deserialize(
-				getHelper(decodeToNode(rootHash), from(keySerializer.serialize(key))));
+				getHelper(decodeToNode(rootHash, true), from(keySerializer.serialize(key))));
 	}
 
 	public ByteBuffer put(K key, V value) {
@@ -138,7 +138,7 @@ public class Trie<K,V>{
 	
 	public Map<K,V> toMap(ByteBuffer rootHash) {
 		Map<K,V> results = new HashMap<>();
-		toMapHelper(decodeToNode(rootHash), new ArrayList<Byte>(), results);
+		toMapHelper(decodeToNode(rootHash, true), new ArrayList<Byte>(), results);
 		return results;
 	}
 	
@@ -313,6 +313,10 @@ public class Trie<K,V>{
 		}
 	}
 	
+//	private ByteBuffer encodeNode(TrieNode node) {
+//		return encodeNode(node, false);
+//	}
+	
 	/**
 	 * Encodes a given node into a ByteString using Protocol Buffers. 
 	 * returns the resulting ByteString if length <= 34, else stores it and returns 
@@ -340,8 +344,12 @@ public class Trie<K,V>{
 						.build()
 						.toByteArray());
 			store.put(hash, encoded);
-			return hashNode;
+			return this.rootNode == node ? hash : hashNode;
 		}
+	}
+	
+	private TrieNode decodeToNode(ByteBuffer bytes) {
+		return decodeToNode(bytes, false);
 	}
 
 	/**
@@ -363,11 +371,14 @@ public class Trie<K,V>{
 	 * @param bytes
 	 * @return
 	 */
-	private TrieNode decodeToNode(ByteBuffer bytes) {
+	private TrieNode decodeToNode(ByteBuffer bytes, boolean hash32Bytes) {
 		
 		if (EMPTY_NODE_BYTES.equals(bytes)) return EMPTY_NODE;
 		
 		try {
+			if (hash32Bytes) 
+				return TrieNode.parseFrom(store.get(bytes));
+			
 			TrieNode node = TrieNode.parseFrom(bytes);
 			if (NodeType.HASH == getNodeType(node)) 
 				return TrieNode.parseFrom(store.get(node.getItem(0).asReadOnlyByteBuffer()));

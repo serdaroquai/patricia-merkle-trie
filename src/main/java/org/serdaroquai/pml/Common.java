@@ -15,9 +15,9 @@ public class Common {
 
 	private static final MessageDigest sha256digest;
 	public static final TrieNode BRANCH_NODE_PROTOTYPE;
-	public static final TrieNode EMPTY_NODE = TrieNode.newBuilder().build();
-	public static final ByteBuffer EMPTY_NODE_BYTES = ByteBuffer.wrap(EMPTY_NODE.toByteArray());
-	public static final ByteBuffer EMPTY = ByteBuffer.allocate(0);
+	public static final TrieNode EMPTY_NODE;
+	public static final ByteBuffer EMPTY_NODE_BYTES;
+	public static final ByteBuffer EMPTY;
 	
 	static {
 		try {
@@ -25,7 +25,11 @@ public class Common {
 		} catch (NoSuchAlgorithmException e) {
 			throw new AssertionError(e);
 		}
-
+		
+		EMPTY_NODE = TrieNode.newBuilder().build();
+		EMPTY_NODE_BYTES = sha256(ByteBuffer.wrap(EMPTY_NODE.toByteArray()));
+		EMPTY = ByteBuffer.allocate(0);
+		
 		// build a prototype branch node
 		Builder newBuilder = TrieNode.newBuilder();
 		for (int i = 0; i < 17; i++)
@@ -48,10 +52,6 @@ public class Common {
 	
 	public static ByteBuffer sha256(ByteBuffer raw) {
 		return ByteBuffer.wrap(sha256digest.digest(raw.array()));
-	}
-
-	public static byte[] sha256(byte[] bytes) {
-		return sha256digest.digest(bytes);
 	}
 
 	public static NodeType getNodeType(TrieNode node) {

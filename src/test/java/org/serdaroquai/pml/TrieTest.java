@@ -29,14 +29,13 @@ public class TrieTest {
 	}
 	
 	@Test
-	@Ignore // TODO returns 0
 	public void testEmptyTrieHash32Bytes() {
 		ByteBuffer root =t.getRootHash();
 		assertEquals(32, root.limit());
 	}
 	
 	@Test
-	@Ignore // TODO returns 34
+//	@Ignore // TODO returns 34
 	public void testRootHash32Bytes() {
 		ByteBuffer root = t.put("key", "value");
 		assertEquals(32, root.limit());

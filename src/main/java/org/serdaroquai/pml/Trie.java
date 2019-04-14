@@ -3,6 +3,7 @@ package org.serdaroquai.pml;
 import static org.serdaroquai.pml.Common.BRANCH_NODE_PROTOTYPE;
 import static org.serdaroquai.pml.Common.EMPTY_NODE;
 import static org.serdaroquai.pml.Common.EMPTY_NODE_BYTES;
+import static org.serdaroquai.pml.Common.EMPTY;
 import static org.serdaroquai.pml.Common.getNodeType;
 import static org.serdaroquai.pml.Common.sha256;
 import static org.serdaroquai.pml.Common.toByteBuffer;
@@ -130,10 +131,67 @@ public class Trie<K,V>{
 		return this.rootHash;
 	}
 	
-	public Map<K,V> toMap() {
-		Map<K,V> results = new HashMap<>();
-		toMapHelper(this.rootNode, new ArrayList<Byte>(), results);
+	protected List<TrieNode> nodes() {
+		return nodes(this.rootHash);
+	}
+	
+	private List<TrieNode> nodes(ByteBuffer bytes) {
+		List<TrieNode> results = new ArrayList<>();
+		nodesHelper(decodeToNode(bytes, true), new ArrayList<Byte>(), results);
 		return results;
+	}
+	
+	/**
+	 * Retrieve a list of all reachable nodes from the given starting point
+	 * 
+	 * @param node stating root node
+	 * @param path current path
+	 * @param result result list
+	 * @param isRoot
+	 */
+	private void nodesHelper(TrieNode node, List<Byte> path, List<TrieNode> list) {
+		
+		NodeType type = getNodeType(node);
+		
+		if (type == NodeType.BLANK) 
+			return;
+		
+		list.add(node);
+		
+		int len = path.size();
+		if (type.isKeyValueType() && !isTerminal(node.getItem(0).asReadOnlyByteBuffer())) {
+			
+			NibbleString key = unpack(node.getItem(0).asReadOnlyByteBuffer());
+			for (Byte b : key) path.add(b);
+			
+			nodesHelper(decodeToNode(node.getItem(1).asReadOnlyByteBuffer()), path, list);
+			
+			len = path.size() - len; // number of nibbles to remove
+			for (int i=0; i<len; i++) path.remove(path.size()-1);
+			
+		} else if (type == NodeType.BRANCH) {
+			
+			for (int i=0; i<16; i++) {
+				ByteBuffer bytes = node.getItem(i).asReadOnlyByteBuffer();
+				if (EMPTY.equals(bytes)) continue;
+				
+				try {
+					// get rid of nested nodes in branch nodes
+					TrieNode childNode = TrieNode.parseFrom(bytes);
+					if (NodeType.HASH != getNodeType(childNode)) continue; 
+					
+					path.add((byte) i);
+					nodesHelper(decodeToNode(node.getItem(i).asReadOnlyByteBuffer()), path, list);
+					path.remove(path.size()-1);
+					
+				} catch (InvalidProtocolBufferException e) {
+					throw new AssertionError("Should never be here");
+				}
+			}
+		}
+	}
+	public Map<K,V> toMap() {
+		return toMap(this.rootHash);
 	}
 	
 	public Map<K,V> toMap(ByteBuffer rootHash) {
@@ -141,6 +199,7 @@ public class Trie<K,V>{
 		toMapHelper(decodeToNode(rootHash, true), new ArrayList<Byte>(), results);
 		return results;
 	}
+	
 	
 	private void toMapHelper(TrieNode node, List<Byte> path, Map<K,V> map) {
 		NodeType type = getNodeType(node);
@@ -167,13 +226,13 @@ public class Trie<K,V>{
 			
 		} else if (type == NodeType.BRANCH) {
 			
-			if (!Common.EMPTY.equals(node.getItem(16).asReadOnlyByteBuffer())) {
+			if (!EMPTY.equals(node.getItem(16).asReadOnlyByteBuffer())) {
 				map.put(keySerializer.deserialize(toByteBuffer(path)), 
 						valueSerializer.deserialize(node.getItem(16).asReadOnlyByteBuffer()));
 			}
 			
 			for (int i=0; i<16; i++) {
-				if (!Common.EMPTY.equals(node.getItem(i).asReadOnlyByteBuffer())) {
+				if (!EMPTY.equals(node.getItem(i).asReadOnlyByteBuffer())) {
 					path.add((byte) i);
 					toMapHelper(decodeToNode(node.getItem(i).asReadOnlyByteBuffer()), path, map);
 					path.remove(path.size()-1);
@@ -184,8 +243,16 @@ public class Trie<K,V>{
 	}
 	
 	private ByteBuffer update(ByteBuffer key, ByteBuffer value) {
-		this.rootNode = updateHelper(rootNode, from(key), value);
-		this.rootHash = encodeNode(rootNode);
+		TrieNode newRootNode = updateHelper(rootNode, from(key), value);
+		ByteBuffer newRootHash = encodeNode(newRootNode, true);
+		
+		if (store.commit()) {
+			this.rootNode = newRootNode;
+			this.rootHash = newRootHash;
+		} else {
+			store.rollback();
+		}
+		
 		return this.rootHash;
 	}
 	
@@ -313,9 +380,9 @@ public class Trie<K,V>{
 		}
 	}
 	
-//	private ByteBuffer encodeNode(TrieNode node) {
-//		return encodeNode(node, false);
-//	}
+	private ByteBuffer encodeNode(TrieNode node) {
+		return encodeNode(node, false);
+	}
 	
 	/**
 	 * Encodes a given node into a ByteString using Protocol Buffers. 
@@ -323,18 +390,18 @@ public class Trie<K,V>{
 	 * its hash encoded in a hash node.
 	 * 
 	 * Only exception to this rule is, if the node to be encoded is the root node, 
-	 * in which case, a raw hash is generated regardless of length.
+	 * in which case, a raw hash is generated regardless of length
 	 * 
-	 * Returned ByteString length is always <= 34.
+	 * Returned ByteBuffer limit is always <= 34.
 	 * 
 	 * @param node
 	 * @return
 	 */
-	private ByteBuffer encodeNode(TrieNode node) {
+	private ByteBuffer encodeNode(TrieNode node, boolean hash32Bytes) {
 		
 		if (EMPTY_NODE.equals(node)) return EMPTY_NODE_BYTES;
 		ByteBuffer encoded = ByteBuffer.wrap(node.toByteArray());
-		if (encoded.limit() < 34 && node != this.rootNode) return encoded;
+		if (encoded.limit() < 34 && !hash32Bytes) return encoded;
 		else {
 			ByteBuffer hash = sha256(encoded);
 			ByteBuffer hashNode = ByteBuffer.wrap(
@@ -344,7 +411,8 @@ public class Trie<K,V>{
 						.build()
 						.toByteArray());
 			store.put(hash, encoded);
-			return this.rootNode == node ? hash : hashNode;
+			
+			return hash32Bytes ? hash : hashNode;
 		}
 	}
 	

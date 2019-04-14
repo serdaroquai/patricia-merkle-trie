@@ -26,4 +26,7 @@ public class MemoryStore implements Store {
 	
 	@Override
 	public boolean commit() { return true;}
+	
+	@Override
+	public void rollback() {}
 }

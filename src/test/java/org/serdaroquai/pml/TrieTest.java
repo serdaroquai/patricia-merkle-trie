@@ -5,12 +5,18 @@ package org.serdaroquai.pml;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.serdaroquai.pml.NodeProto.TrieNode;
 
 public class TrieTest {
 	
@@ -25,6 +31,64 @@ public class TrieTest {
 	private void init() {
 		s = new MemoryStore();
 		t = Trie.create(s);
+	}
+	
+	@Test
+	public void testNodesEmpty() {
+		List<TrieNode> actual = t.nodes();
+		assertEquals(Collections.emptyList(), actual);
+	}
+	
+	@Test
+	public void testNodesSingleKeyValueNode() {
+		t.put("key", "value");
+		List<TrieNode> actual = t.nodes();
+		assertEquals(1, actual.size());
+		TrieNode node = actual.get(0);
+		assertEquals("[206b6579,value]", Common.toString(ByteBuffer.wrap(node.toByteArray())));
+	}
+	
+	@Test
+	public void testNodesWithBranchNode() {
+		t.put("key", "value");
+		t.put("key2", "value2");
+		
+		List<TrieNode> actual = t.nodes();
+		assertEquals("Incorrect number of nodes", 2, actual.size());
+		
+		Set<String> expected = new HashSet<>();
+		expected.add("[006b6579,(88d2..5a59)]");
+		expected.add("[,,,[32,value2],,,,,,,,,,,,,value]");
+
+		for (TrieNode node : actual) {
+			assertTrue("Missing Node", expected.contains(Common.toString(ByteBuffer.wrap(node.toByteArray()))));
+		}
+		
+	}
+	
+	@Test
+	public void testNodesWithBiggerExample() {
+		
+		t.put("do", "verb");
+		t.put("dog", "puppy");
+		t.put("doge", "coin");
+		t.put("horse", "stallion");
+		
+		List<TrieNode> actual = t.nodes();
+		assertEquals("Incorrect number of nodes", 6, actual.size());
+		
+		Set<String> expected = new HashSet<>();
+		expected.add("[16,(0e07..af6f)]");
+		expected.add("[,,,,(3540..3302),,,,[206f727365,stallion],,,,,,,,]");
+		expected.add("[006f,(f86e..4766)]");
+		expected.add("[,,,,,,(9dd0..f5e9),,,,,,,,,,verb]");
+		expected.add("[17,(c71b..373b)]");
+		expected.add("[,,,,,,[35,coin],,,,,,,,,,puppy]");
+
+		for (TrieNode node : actual) {
+			assertTrue("Missing Node", expected.contains(Common.toString(ByteBuffer.wrap(node.toByteArray()))));
+		}
+		
 	}
 	
 	@Test

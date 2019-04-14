@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.nio.ByteBuffer;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,6 @@ import org.serdaroquai.pml.NodeProto.TrieNode;
 public class TrieTest {
 	
 	Trie<String,String> t;
-	Store s;
 	
 	@Before
 	public void setup() {
@@ -29,8 +29,10 @@ public class TrieTest {
 	}
 	
 	private void init() {
-		s = new MemoryStore();
-		t = Trie.create(s);
+		t = new Trie.TrieBuilder<String,String>()
+			.keySerializer(Serializer.STRING_UTF8)
+			.valueSerializer(Serializer.STRING_UTF8)
+			.build();
 	}
 	
 	@Test
@@ -107,7 +109,7 @@ public class TrieTest {
 		assertEquals(32, root.limit());
 		
 		assertEquals(root, t.getRootHash());
-		assertNotNull("missing hash in store", s.get(root));
+		assertNotNull("missing hash in store", t.getStore().get(root));
 	}
 	
 	@Test
@@ -489,10 +491,47 @@ public class TrieTest {
 	
 	@Test
 	public void testCreation() {
-		t = Trie.create();
+		t = new Trie.TrieBuilder<String,String>()
+				.keySerializer(Serializer.STRING_UTF8)
+				.valueSerializer(Serializer.STRING_UTF8)
+				.build();
+		
 		assertNotNull(t);
 		t.put("a", "va");
 		assertEquals("va", t.get("a"));
+	}
+	
+	@Test
+	public void testCreationWithInitialValues() {
+		
+		Map<String,String> map = new HashMap<>();
+		map.put("do", "verb");
+		map.put("dog", "puppy");
+		map.put("doge", "coin");
+		map.put("horse", "stallion");
+		
+		t = new Trie.TrieBuilder<String,String>()
+				.keySerializer(Serializer.STRING_UTF8)
+				.valueSerializer(Serializer.STRING_UTF8)
+				.from(map)
+				.build();
+		
+		Set<String> expected = new HashSet<>();
+		expected.add("[16,(0e07..af6f)]");
+		expected.add("[,,,,(3540..3302),,,,[206f727365,stallion],,,,,,,,]");
+		expected.add("[006f,(f86e..4766)]");
+		expected.add("[,,,,,,(9dd0..f5e9),,,,,,,,,,verb]");
+		expected.add("[17,(c71b..373b)]");
+		expected.add("[,,,,,,[35,coin],,,,,,,,,,puppy]");
+
+		List<TrieNode> actual = t.nodes();
+		assertEquals("Incorrect number of nodes", 6, actual.size());
+		
+		t.getStore().dumpAll();
+		
+		for (TrieNode node : actual) {
+			assertTrue("Missing Node", expected.contains(Common.toString(ByteBuffer.wrap(node.toByteArray()))));
+		}
 	}
 
 }

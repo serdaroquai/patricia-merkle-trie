@@ -1,9 +1,9 @@
 package org.serdaroquai.pml;
 
 import static org.serdaroquai.pml.Common.BRANCH_NODE_PROTOTYPE;
+import static org.serdaroquai.pml.Common.EMPTY;
 import static org.serdaroquai.pml.Common.EMPTY_NODE;
 import static org.serdaroquai.pml.Common.EMPTY_NODE_BYTES;
-import static org.serdaroquai.pml.Common.EMPTY;
 import static org.serdaroquai.pml.Common.getNodeType;
 import static org.serdaroquai.pml.Common.sha256;
 import static org.serdaroquai.pml.Common.toByteBuffer;
@@ -83,21 +83,72 @@ public class Trie<K,V>{
 	private ByteBuffer rootHash;
 	private Serializer<K> keySerializer;
 	private Serializer<V> valueSerializer;
-	
-	public static Trie<String, String> create() {
-		return new Trie<String, String>(EMPTY_NODE_BYTES, new MemoryStore(), Serializer.STRING_UTF8, Serializer.STRING_UTF8);
-	}
-
-	public static Trie<String, String> create(Store store) {
-		return new Trie<String, String>(EMPTY_NODE_BYTES, store, Serializer.STRING_UTF8, Serializer.STRING_UTF8);
-	}
-	
-	public static Trie<String, String> create(ByteBuffer rootHash, Store store) {
-		return new Trie<String, String>(rootHash, store, Serializer.STRING_UTF8, Serializer.STRING_UTF8);
-	}
-	
-	public static <K,V> Trie<K, V> create(ByteBuffer rootHash, Store store, Serializer<K> key, Serializer<V> value) {
-		return new Trie<K, V>(EMPTY_NODE_BYTES, store, key, value);
+		
+	public static class TrieBuilder<K,V> {
+		
+		ByteBuffer rootHash = EMPTY_NODE_BYTES;
+		Store store = new MemoryStore(); 
+		Map<K,V> initialValues = new HashMap<>();
+		Serializer<K> keySerializer; 
+		Serializer<V> valueSerializer;
+		
+		public TrieBuilder() {};
+		
+		public TrieBuilder<K,V> rootHash(ByteBuffer rootHash) {
+			this.rootHash = rootHash;
+			return this;
+		}
+		
+		public TrieBuilder<K,V> store(Store store) {
+			this.store = store;
+			return this;
+		}
+		
+		public TrieBuilder<K,V> keySerializer(Serializer<K> keySerializer) {
+			this.keySerializer = keySerializer;
+			return this;
+		}
+		
+		public TrieBuilder<K,V> valueSerializer(Serializer<V> valueSerializer) {
+			this.valueSerializer = valueSerializer;
+			return this;
+		}
+		
+		public TrieBuilder<K,V> from(Map<K,V> values) {
+			this.initialValues = values;
+			return this;
+		}
+		
+		public Trie<K,V> build() {
+			if (keySerializer == null || valueSerializer == null) 
+				throw new AssertionError("Need to set serializers");
+			
+			if (rootHash != EMPTY_NODE_BYTES && !initialValues.isEmpty())
+				throw new AssertionError("Can not have initial values in non-empty trie");
+			
+			Trie<K,V> trie = new Trie<K,V>(rootHash, store, keySerializer, valueSerializer);
+			if (rootHash != EMPTY_NODE_BYTES) return trie;
+			
+			// populate initial values
+			Trie<K,V> temp = new Trie<K,V>(rootHash, new MemoryStore(), keySerializer, valueSerializer);
+			for (Map.Entry<K, V> e : initialValues.entrySet()) {
+				temp.put(e.getKey(), e.getValue());
+			}
+			ByteBuffer rootHash = temp.getRootHash();
+			TrieNode rootNode = temp.decodeToNode(rootHash, true);
+			
+			List<TrieNode> nodes = temp.nodes();
+			for (TrieNode node : nodes) trie.encodeNode(node, rootNode == node);
+			
+			if (trie.store.commit()) {
+				trie.rootHash = rootHash;
+				trie.rootNode = rootNode;
+				return trie;
+			}
+			
+			throw new AssertionError("Could not commit initial values");
+			
+		}
 	}
 	
 	private Trie(
@@ -129,6 +180,10 @@ public class Trie<K,V>{
 
 	public ByteBuffer getRootHash() {
 		return this.rootHash;
+	}
+	
+	protected Store getStore() {
+		return this.store;
 	}
 	
 	protected List<TrieNode> nodes() {

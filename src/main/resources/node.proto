@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package org.serdaroquai.pml;
-option java_outer_classname = "NodeProto";
-
-message TrieNode {
-	repeated bytes item = 1;
-}

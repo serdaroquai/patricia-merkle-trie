@@ -138,7 +138,8 @@ public class Trie<K,V>{
 			TrieNode rootNode = temp.decodeToNode(rootHash, true);
 			
 			List<TrieNode> nodes = temp.nodes();
-			for (TrieNode node : nodes) trie.encodeNode(node, rootNode == node);
+			for (TrieNode node : nodes) 
+				trie.encodeNode(node, rootNode.equals(node));
 			
 			if (trie.store.commit()) {
 				trie.rootHash = rootHash;

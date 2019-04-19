@@ -21,7 +21,10 @@ public interface Serializer<T> {
 	
 	public static final Serializer<String> STRING_UTF8 = new Serializer<String>() {
 		@Override
-		public ByteBuffer serialize(String obj) { return ByteBuffer.wrap(obj.getBytes(StandardCharsets.UTF_8));}
+		public ByteBuffer serialize(String obj) { 
+			return ByteBuffer.wrap(obj.getBytes(StandardCharsets.UTF_8));
+		}
+		
 		@Override
 		public String deserialize(ByteBuffer bytes) {
 			if (bytes.hasArray()) {
@@ -38,12 +41,17 @@ public interface Serializer<T> {
 	 * TODO, test me
 	 */
 	public static final Serializer<Boolean> BOOLEAN = new Serializer<Boolean>() {
-		private final ByteBuffer FALSE = ByteBuffer.wrap(new byte[] {(byte) 0x00});
-		private final ByteBuffer TRUE = ByteBuffer.wrap(new byte[] {(byte) 0xFF});
+		private final byte[] FALSE = new byte[] {(byte) 0x00};
+		private final byte[] TRUE = new byte[] {(byte) 0xFF};
+		
 		@Override
-		public ByteBuffer serialize(Boolean obj) { return obj ? TRUE : FALSE;}
+		public ByteBuffer serialize(Boolean obj) { 
+			return obj ? ByteBuffer.wrap(TRUE) : ByteBuffer.wrap(FALSE);
+		}
 		@Override
-		public Boolean deserialize(ByteBuffer bytes) { return TRUE.equals(bytes) ? true : false;}	
+		public Boolean deserialize(ByteBuffer bytes) { 
+			return ByteBuffer.wrap(TRUE).equals(bytes);
+		}
 	};
 	
 	/**

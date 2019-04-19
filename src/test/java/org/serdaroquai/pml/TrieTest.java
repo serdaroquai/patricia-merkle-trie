@@ -527,11 +527,24 @@ public class TrieTest {
 		List<TrieNode> actual = t.nodes();
 		assertEquals("Incorrect number of nodes", 6, actual.size());
 		
-		t.getStore().dumpAll();
-		
 		for (TrieNode node : actual) {
 			assertTrue("Missing Node", expected.contains(Common.toString(ByteBuffer.wrap(node.toByteArray()))));
 		}
+	}
+	
+	@Test
+	public void testCreationWithSmallInitialValues() {
+		Map<String,Boolean> map = new HashMap<>();
+		map.put("SW1", true);
+	
+		// used to have a bug with encode(node, root == node); => now root.equals(node)
+		Trie<String,Boolean> trie = new Trie.TrieBuilder<String,Boolean>()
+				.keySerializer(Serializer.STRING_UTF8)
+				.valueSerializer(Serializer.BOOLEAN)
+				.from(map)
+				.build();
+		
+		assertEquals(true, trie.get("SW1"));
 	}
 
 }

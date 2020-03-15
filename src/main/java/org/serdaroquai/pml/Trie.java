@@ -1,22 +1,13 @@
 package org.serdaroquai.pml;
 
-import static org.serdaroquai.pml.Common.BRANCH_NODE_PROTOTYPE;
-import static org.serdaroquai.pml.Common.EMPTY;
-import static org.serdaroquai.pml.Common.EMPTY_NODE;
-import static org.serdaroquai.pml.Common.EMPTY_NODE_BYTES;
-import static org.serdaroquai.pml.Common.getNodeType;
-import static org.serdaroquai.pml.Common.sha256;
-import static org.serdaroquai.pml.Common.toByteBuffer;
+import static org.serdaroquai.pml.Common.*;
 import static org.serdaroquai.pml.NibbleString.from;
 import static org.serdaroquai.pml.NibbleString.isTerminal;
 import static org.serdaroquai.pml.NibbleString.pack;
 import static org.serdaroquai.pml.NibbleString.unpack;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.serdaroquai.pml.NodeProto.TrieNode;
 
@@ -202,8 +193,7 @@ public class Trie<K,V>{
 	 * 
 	 * @param node stating root node
 	 * @param path current path
-	 * @param result result list
-	 * @param isRoot
+	 * @param list result list
 	 */
 	private void nodesHelper(TrieNode node, List<Byte> path, List<TrieNode> list) {
 		
@@ -246,6 +236,7 @@ public class Trie<K,V>{
 			}
 		}
 	}
+
 	public Map<K,V> toMap() {
 		return toMap(this.rootHash);
 	}
@@ -255,7 +246,6 @@ public class Trie<K,V>{
 		toMapHelper(decodeToNode(rootHash, true), new ArrayList<Byte>(), results);
 		return results;
 	}
-	
 	
 	private void toMapHelper(TrieNode node, List<Byte> path, Map<K,V> map) {
 		NodeType type = getNodeType(node);
@@ -312,14 +302,14 @@ public class Trie<K,V>{
 		return this.rootHash;
 	}
 	
-	/*
+	/**
 	 * Key point to keep in mind with this helper is that 
 	 * new nodes returned from self-recursion are persisted by current invocation
 	 * but returned nodes are persisted by the parent.
 	 * 
-	 * @param node. TrieNode format
-	 * @param path. NibbleString (not compact)
-	 * @param value. Value to be inserted
+	 * @param node TrieNode format
+	 * @param path NibbleString (not compact)
+	 * @param value Value to be inserted
 	 * 
 	 * @return the new version of self node
 	 */
@@ -551,5 +541,125 @@ public class Trie<K,V>{
 		
 		throw new AssertionError("Not possible");
 	}
+
+	/**
+	 * Given an old root hash, finds the differences between the two states
+	 *
+	 * @param oldRoot an older rootHash
+	 * @param remove keys that have been changed and their old values
+	 * @param update keys in currentRoot that either don't exist in oldRoot, or has a different value in currentRoot.
+	 */
+	public void difference(ByteBuffer oldRoot, Map<K,V> remove, Map<K,V> update) {
+		PriorityQueue<Pair> pqOld = new PriorityQueue<>();
+		PriorityQueue<Pair> pqNew = new PriorityQueue<>();
+
+		pqOld.offer(new Pair(Collections.emptyList(), decodeToNode(oldRoot, true)));
+		pqNew.offer(new Pair(Collections.emptyList(), decodeToNode(this.rootHash, true)));
+
+		while (!pqOld.isEmpty() || !pqNew.isEmpty()) {
+			Pair pOld = pqOld.isEmpty() ? Pair.DUMMY : pqOld.poll();
+			Pair pNew = pqNew.isEmpty() ? Pair.DUMMY : pqNew.poll();
+
+			int compare = pOld.compareTo(pNew);
+			if (compare < 0) {
+				if (pNew != Pair.DUMMY) pqNew.offer(pNew);
+
+				ByteBuffer value = getImmediateValueOfNode(pOld.node);
+				if (!EMPTY.equals(value)) {
+					remove.put(keySerializer.deserialize(toByteBuffer(pOld.path)),
+							valueSerializer.deserialize(value));
+				}
+				enqueueChildren(pqNew, pNew.path, pNew.node);
+
+			} else  if (compare > 0) {
+				if (pOld != Pair.DUMMY) pqOld.offer(pOld);
+
+				ByteBuffer value = getImmediateValueOfNode(pNew.node);
+				if (!EMPTY.equals(value)) {
+					update.put(keySerializer.deserialize(toByteBuffer(pNew.path)),
+							valueSerializer.deserialize(value));
+				}
+				enqueueChildren(pqNew, pNew.path, pNew.node);
+
+			} else { // pOld.equals(pNew)
+				if (pOld.node.equals(pNew.node)) continue; // both path and nodes are same (best case)
+
+				ByteBuffer value1 = getImmediateValueOfNode(pOld.node);
+				ByteBuffer value2 = getImmediateValueOfNode(pNew.node);
+
+				if (!value1.equals(value2)) {
+					if (!EMPTY.equals(value1)) {
+						remove.put(keySerializer.deserialize(toByteBuffer(pOld.path)), valueSerializer.deserialize(value1));
+					}
+					if (!EMPTY.equals(value2)) {
+						update.put(keySerializer.deserialize(toByteBuffer(pNew.path)), valueSerializer.deserialize(value2));
+					}
+				}
+
+				// enqueue children
+				enqueueChildren(pqOld, pOld.path, pOld.node);
+				enqueueChildren(pqNew, pNew.path, pNew.node);
+			}
+		}
+	}
+
+	private void enqueueChildren(PriorityQueue<Pair> pq, List<Byte> path, TrieNode node) {
+		NodeType nodeType = getNodeType(node);
+		if (nodeType.isKeyValueType()) {
+			NibbleString key = NibbleString.unpack(node.getItem(0).asReadOnlyByteBuffer());
+			ByteBuffer value = node.getItem(1).asReadOnlyByteBuffer();
+
+			if (isTerminal(node.getItem(0).asReadOnlyByteBuffer())) {
+				if (!EMPTY_NIBBLE.equals(key)) {
+					// a terminal node with some additional key, normalize and requeue
+					List<Byte> newPath = new ArrayList<>(path);
+					for (Byte b : key) newPath.add(b);
+
+					TrieNode normalizedNode = TrieNode.newBuilder()
+							.addItem(ByteString.copyFrom(pack(EMPTY_NIBBLE, true)))
+							.addItem(ByteString.copyFrom(value))
+							.build();
+
+					pq.offer(new Pair(newPath, normalizedNode));
+				}
+			} else {
+				// extension node (add key to path and queue child node)
+				List<Byte> newPath = new ArrayList<>(path);
+				for (Byte b : key) newPath.add(b);
+				pq.offer(new Pair(newPath, decodeToNode(value)));
+			}
+		} else if (nodeType == NodeType.BRANCH) {
+			// branch node
+			// traverse and queue children
+			for (int i = 0; i < 16; i++) {
+				if (EMPTY.equals(node.getItem(i).asReadOnlyByteBuffer())) continue;
+				List<Byte> newPath = new ArrayList<>(path);
+				newPath.add((byte) i);
+				pq.offer(new Pair(newPath, decodeToNode(node.getItem(i).asReadOnlyByteBuffer())));
+			}
+		}
+	}
+
+	/**
+	 * Returns the immediate value associated with given node if
+	 *  * node is a leaf node with no key extension (key: 20)
+	 *  * node is a branch node with a value
+	 *
+	 * @param node
+	 * @return empty bytebuffer otherwise
+	 */
+	private ByteBuffer getImmediateValueOfNode(TrieNode node) {
+		NodeType nodeType = getNodeType(node);
+		if (nodeType.isKeyValueType()) { // leaf node with no key extension
+			NibbleString key = NibbleString.unpack(node.getItem(0).asReadOnlyByteBuffer());
+			if (isTerminal(node.getItem(0).asReadOnlyByteBuffer()) && EMPTY_NIBBLE.equals(key)) {
+				return node.getItem(1).asReadOnlyByteBuffer();
+			}
+		} else if (nodeType == NodeType.BRANCH) {
+			return node.getItem(16).asReadOnlyByteBuffer();
+		}
+		return EMPTY;
+	}
+
 
 }

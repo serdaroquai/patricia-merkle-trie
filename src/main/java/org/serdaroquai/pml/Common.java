@@ -18,6 +18,7 @@ public class Common {
 	public static final TrieNode EMPTY_NODE;
 	public static final ByteBuffer EMPTY_NODE_BYTES;
 	public static final ByteBuffer EMPTY;
+	public static final NibbleString EMPTY_NIBBLE;
 	
 	static {
 		try {
@@ -29,6 +30,7 @@ public class Common {
 		EMPTY_NODE = TrieNode.newBuilder().build();
 		EMPTY_NODE_BYTES = sha256(ByteBuffer.wrap(EMPTY_NODE.toByteArray()));
 		EMPTY = ByteBuffer.allocate(0);
+		EMPTY_NIBBLE = NibbleString.from(EMPTY);
 		
 		// build a prototype branch node
 		Builder newBuilder = TrieNode.newBuilder();
@@ -40,6 +42,12 @@ public class Common {
 	}
 	
 	//TODO test me
+	/**
+	 * Converts a list of nibbles (each represented by a single byte) into a byte buffer
+	 *
+	 * @param nibbles a list of nibbles. Each byte represents a single nibble and is right aligned
+	 * @return an unpacked byteBuffer of nibbles
+	 */
 	public static ByteBuffer toByteBuffer(List<Byte> nibbles) {
 		int len = nibbles.size();
 		byte[] bytes = new byte[len>>1];

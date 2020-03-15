@@ -7,6 +7,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -19,6 +21,7 @@ public class NibbleStringTest {
 	private static final byte[] SAME_BYTES = new byte[]{(byte) 0x00, (byte) 0x34, (byte) 0x34};
 	private static final byte[] LONG_BYTES = new byte[]{(byte) 0x10, (byte) 0x12, (byte) 0x34,
 			(byte) 0x56, (byte) 0x78, (byte) 0x9a, (byte) 0xbc, (byte) 0xde};
+	private static final byte[] EMPTY_BYTES = new byte[0];
 
 	@Test
 	public void testSubstring() {
@@ -112,6 +115,21 @@ public class NibbleStringTest {
 		ByteBuffer actual = NibbleString.pack(n, false);
 		assertEquals(expected, actual);
 	}
+
+	@Test
+	public void testEmptyBytesPack() {
+		NibbleString n = NibbleString.from(ByteBuffer.wrap(EMPTY_BYTES));
+		ByteBuffer actual = NibbleString.pack(n, true);
+		ByteBuffer expected = ByteBuffer.wrap(new byte[]{0x20});
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void testEmptyBytesUnpack() {
+		NibbleString expected = NibbleString.from(Common.EMPTY);
+		NibbleString actual = NibbleString.unpack(ByteBuffer.wrap(new byte[]{0x20}));
+		assertEquals(expected, actual);
+	}
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void testBoundsCheck() {
@@ -131,5 +149,27 @@ public class NibbleStringTest {
 		b2 = ByteString.copyFromUtf8("test").asReadOnlyByteBuffer();
 		
 		assertEquals(b1, b2);
+	}
+
+	@Test
+	public void testNibbleEquality() {
+		NibbleString n1 = NibbleString.from(ByteBuffer.wrap(new byte[]{0,1,2,3,4,5}));
+		NibbleString n1Prime = NibbleString.from(ByteBuffer.wrap(new byte[]{0,1,2,3,4,5}));
+		NibbleString n2 = NibbleString.from(ByteBuffer.wrap(new byte[]{5,4,3,2,1,0}));
+
+		assertEquals(n1, n1Prime);
+		assertNotEquals(n1, n2);
+		assertNotEquals(n1Prime, n2);
+	}
+
+	@Test
+	public void testByteArrayEquality() {
+		List<Byte> b1 = Arrays.asList(Byte.valueOf((byte) 0x01), Byte.valueOf((byte) 0x02));
+		List<Byte> b1Prime = Arrays.asList(Byte.valueOf((byte) 0x01), Byte.valueOf((byte) 0x02));
+		List<Byte> b2 = Arrays.asList(Byte.valueOf((byte) 0x03), Byte.valueOf((byte) 0x04));
+
+		assertEquals(b1, b1Prime);
+		assertNotEquals(b1, b2);
+		assertNotEquals(b1Prime, b2);
 	}
 }

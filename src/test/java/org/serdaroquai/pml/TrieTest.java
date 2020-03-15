@@ -8,12 +8,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -545,6 +541,163 @@ public class TrieTest {
 				.build();
 		
 		assertEquals(true, trie.get("SW1"));
+	}
+	@Test
+	public void testEmptyKeyInsertion() {
+		t.put("", "emptyValue");
+		Set<String> expected = new HashSet<>();
+		expected.add("[20,emptyValue]");
+
+		List<TrieNode> actual = t.nodes();
+		assertEquals("Incorrect number of nodes", 1, actual.size());
+
+		for (TrieNode node : actual) {
+			assertTrue("Missing Node", expected.contains(Common.toString(ByteBuffer.wrap(node.toByteArray()))));
+		}
+
+		assertEquals("emptyValue", t.get(""));
+	}
+
+
+	@Test
+	public void testLongTypeKeys() {
+
+		Map<Long,String> map = new HashMap<>();
+		map.put(0L, "a very long value which can not be compacted");
+		map.put(1L, "another very long value which can not be compacted");
+		map.put(17L, "yet another very long value which can not be compacted");
+
+		Trie<Long, String> trie = new Trie.TrieBuilder<Long, String>()
+				.keySerializer(Serializer.INT64)
+				.valueSerializer(Serializer.STRING_UTF8)
+				.from(map)
+				.build();
+
+		Set<String> expected = new HashSet<>();
+		expected.add("[0000000000000000,(daa2..d6e6)]");
+		expected.add("[(fb24..bbc7),(1d0d..b61a),,,,,,,,,,,,,,,]");
+		expected.add("[(0a9c..0fe2),(53e0..ee0d),,,,,,,,,,,,,,,]");
+		expected.add("[31,yet another very long value which can not be compacted]");
+		expected.add("[20,another very long value which can not be compacted]");
+		expected.add("[20,a very long value which can not be compacted]");
+
+		List<TrieNode> actual = trie.nodes();
+		assertEquals("Incorrect number of nodes", 6, actual.size());
+
+		for (TrieNode node : actual) {
+			assertTrue("Missing Node", expected.contains(Common.toString(ByteBuffer.wrap(node.toByteArray()))));
+		}
+	}
+
+	@Test
+	public void testDifferenceSameTrie() {
+		t.put("do", "verb");
+		t.put("dog", "puppy");
+		t.put("doge", "coin");
+		ByteBuffer rootHash = t.put("horse", "stallion");
+
+		Map<String, String> remove = new HashMap<>();
+		Map<String, String> update = new HashMap<>();
+		t.difference(rootHash, remove, update);
+
+		assertEquals(Collections.emptyMap(), remove);
+		assertEquals(Collections.emptyMap(), update);
+
+	}
+
+	@Test
+	public void testDifferenceEmptyTrie() {
+		Map<String, String> remove = new HashMap<>();
+		Map<String, String> update = new HashMap<>();
+		t.difference(t.getRootHash(), remove, update);
+
+		assertEquals(Collections.emptyMap(), remove);
+		assertEquals(Collections.emptyMap(), update);
+
+	}
+
+	@Test
+	public void testDifferenceSimpleSingleValue() {
+		t.put("do", "verb");
+		t.put("dog", "puppy");
+		ByteBuffer oldHash = t.put("doge", "coin");
+		//		(827f..2f44): [00646f,(f86e..4766)]
+		//		(f86e..4766): [,,,,,,(9dd0..f5e9),,,,,,,,,,verb]
+		//		(9dd0..f5e9): [17,(c71b..373b)]
+		//		(c71b..373b): [,,,,,,[35,coin],,,,,,,,,,puppy]
+
+		t.put("horse", "stallion");
+		//		(ba5d..e55a): [16,(0e07..52af)]
+		//		(0e07..52af): [,,,,(3540..1733),,,,[206f727365,stallion],,,,,,,,]
+		//		(3540..1733): [006f,(f86e..8547)]
+		//		(f86e..8547): [,,,,,,(9dd0..bef5),,,,,,,,,,verb]
+		//		(9dd0..bef5): [17,(c71b..2737)]
+		//		(c71b..2737): [,,,,,,[35,coin],,,,,,,,,,puppy]
+
+		Map<String, String> remove = new HashMap<>();
+		Map<String, String> update = new HashMap<>();
+		t.difference(oldHash, remove, update);
+
+		Map<String, String> expectedUpdate = new HashMap<>();
+		expectedUpdate.put("horse", "stallion");
+
+		assertEquals(Collections.emptyMap(), remove);
+		assertEquals(expectedUpdate, update);
+
+	}
+
+	@Test
+	public void testDifferenceRandom() {
+		int maxInitialElements = 500;
+		int maxDifferentElements = 100;
+		int maxValue = 5;
+		int times = 1000;
+
+		Random r = new Random();
+
+		while (times-- > 0) {
+			Map<Long, Long> initialValues = new HashMap<>();
+			int initialSize = r.nextInt(maxInitialElements);
+			while (initialSize-- > 0) {
+				initialValues.put(r.nextInt(maxInitialElements) + 0L, r.nextInt(maxValue) + 0L);
+			}
+
+			Trie<Long, Long> trie = new Trie.TrieBuilder()
+					.keySerializer(Serializer.INT64)
+					.valueSerializer(Serializer.INT64)
+					.from(initialValues)
+					.build();
+
+			ByteBuffer hash = trie.getRootHash();
+
+			Map<Long, Long> finalValues = new HashMap<>(initialValues);
+			int changeCount = r.nextInt(maxDifferentElements);
+			while (changeCount-- > 0) {
+				long key = r.nextInt(maxInitialElements) + 0L;
+				long value = r.nextInt(maxValue) + 0L;
+				finalValues.put(key, value);
+				trie.put(key, value);
+			}
+
+			Map<Long, Long> expectedUpdate = finalValues.entrySet().stream()
+					.filter(e -> initialValues.get(e.getKey()) != e.getValue())
+					.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+
+			Map<Long, Long> expectedRemove = initialValues.entrySet().stream()
+					.filter(e -> finalValues.get(e.getKey()) != e.getValue())
+					.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+
+			Map<Long, Long> update = new HashMap<>();
+			Map<Long, Long> remove = new HashMap<>();
+
+			trie.difference(hash, remove, update);
+
+			assertEquals(expectedUpdate, update);
+			assertEquals(expectedRemove, remove);
+
+		}
+
+
 	}
 
 }

@@ -10,7 +10,7 @@ Add below dependency and repository to your pom.xml
   <dependency>
     <groupId>org.serdaroquai.pml</groupId>
     <artifactId>patricia-merkle-trie</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
   </dependency>
 
 //..
@@ -47,4 +47,9 @@ t.get(rootHash, "doge") // returns coin
 // build a map
 t.toMap(); // returns a Map<String,String> of all key-value pairs
 t.toMap(someOldRootHash); // also works for any past state
+
+// you can query differences between a past state
+Map<String,String> remove = new HashMap<>();
+Map<String,String> update = new HashMap<>();
+t.difference(rootHash, remove, update); // remove: <doge, coin>  , update: <doge, no-coin>
 ```
